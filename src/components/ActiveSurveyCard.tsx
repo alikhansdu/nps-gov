@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 const ClockIcon = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
@@ -16,6 +18,7 @@ const MapPinIcon = () => (
 );
 
 interface ActiveSurveyCardProps {
+  id?: number;
   title?: string;
   description?: string;
   region?: string;
@@ -27,6 +30,7 @@ interface ActiveSurveyCardProps {
 }
 
 export default function ActiveSurveyCard({
+  id = 1,
   title = "Развитие общественного транспорта в городах РК",
   description = "Оцените текущее состояние и предложите меры по улучшению городского транспорта в вашем регио...",
   region = "Вся РК",
@@ -34,7 +38,6 @@ export default function ActiveSurveyCard({
   deadline = "До 15 марта 2026",
   participants = "142 850",
   participation = 71,
-  onVote,
 }: ActiveSurveyCardProps) {
   return (
     <div className="bg-white border border-[#E4E4E7] rounded-xl p-5 flex flex-col gap-4 shadow-sm w-full">
@@ -73,11 +76,13 @@ export default function ActiveSurveyCard({
         </div>
       </div>
 
-      <button onClick={onVote}
-        className="w-full py-3 text-sm font-medium rounded-lg transition-colors"
-        style={{ backgroundColor: "#0A1628", color: "white" }}>
+      <Link
+        to={`/surveys/${id}`}
+        className="w-full py-3 text-sm font-medium rounded-lg transition-colors text-center"
+        style={{ backgroundColor: "#0A1628", color: "white" }}
+      >
         Проголосовать
-      </button>
+      </Link>
     </div>
   );
 }
