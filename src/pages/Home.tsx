@@ -1,8 +1,8 @@
 import ActiveSurveyCard from "../components/ActiveSurveyCard";
 import ClosedSurveyCard from "../components/ClosedSurveyCard";
-import StatisticCard from "../components/StatisticCard";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
+import { Link } from "react-router-dom";
 
 // ─── Mock Data ───────────────────────────────────────────
 const activeSurveys = [
@@ -116,21 +116,24 @@ export default function Home() {
       <Hero />
 
       <main
-        className="flex-1 max-w-7xl mx-auto w-full px-8 flex flex-col"
-        style={{ gap: "160px", paddingTop: "80px", paddingBottom: "80px" }}
+        className="flex-1 w-full flex flex-col"
+        style={{ gap: "0", paddingTop: "80px", paddingBottom: "0" }}
       >
 
         {/* Active Surveys */}
-        <section>
+        <section className="max-w-7xl mx-auto w-full px-8 mb-24">
           <div className="flex items-center justify-between mb-5">
             <div>
               <h2 className="text-xl font-bold text-gray-900">Активные опросы</h2>
               <p className="text-sm text-gray-500 mt-0.5">Примите участие и выразите своё мнение</p>
             </div>
-            <a href="/surveys" className="text-sm font-medium flex items-center gap-2 hover:underline"
-              style={{ color: "#00BCD4" }}>
+            <Link
+              to="/surveys"
+              className="text-sm font-medium flex items-center gap-2 hover:underline"
+              style={{ color: "#00BCD4" }}
+            >
               Все опросы <ChevronRight />
-            </a>
+            </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {activeSurveys.map((s) => (
@@ -139,70 +142,83 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Closed Surveys */}
-        <section>
-          <div className="flex items-center justify-between mb-5">
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">Завершённые опросы</h2>
-              <p className="text-sm text-gray-500 mt-0.5">Результаты публичных голосований</p>
+        {/* ─── Closed Surveys — GRAY BG ─────────────────── */}
+        <section className="w-full bg-gray-100 py-16">
+          <div className="max-w-7xl mx-auto w-full px-8">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Завершённые опросы</h2>
+                <p className="text-sm text-gray-500 mt-0.5">Результаты публичных голосований</p>
+              </div>
             </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {closedSurveys.map((s) => (
-              <ClosedSurveyCard key={s.id} {...s} />
-            ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {closedSurveys.map((s) => (
+                <ClosedSurveyCard key={s.id} {...s} />
+              ))}
+            </div>
           </div>
         </section>
 
-        {/* Statistics */}
-        <section>
+        {/* ─── Statistics — иконки CENTER aligned ──────── */}
+        <section className="max-w-7xl mx-auto w-full px-8 py-16">
           <div className="text-center mb-6">
             <h2 className="text-xl font-bold text-gray-900">Общая статистика</h2>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {stats.map((s, i) => (
-              <StatisticCard key={i} value={s.value} label={s.label} icon={statIcons[i]} />
-            ))}
-          </div>
-          <div className="flex justify-center mt-6">
-            <a href="/analytics" className="px-6 py-2.5 text-sm font-medium rounded-lg transition-colors"
-              style={{ backgroundColor: "#0A1628", color: "white" }}>
-              Аналитика →
-            </a>
-          </div>
-        </section>
-
-        {/* How it works */}
-        <section>
-          <div className="text-center mb-6">
-            <h2 className="text-xl font-bold text-gray-900">Как это работает</h2>
-            <p className="text-sm text-gray-500 mt-1">Простой и прозрачный процесс участия</p>
-          </div>
-
-          {/* Horizontal card — как в Figma */}
-          <div className="w-full rounded-xl border border-gray-200 bg-white flex flex-col sm:flex-row"
-            style={{ gap: "0" }}>
-            {howItWorks.map((item, i) => (
               <div
-                key={item.step}
-                className="flex items-start gap-4 flex-1 p-6"
-                style={{
-                  borderRight: i < howItWorks.length - 1 ? "1px solid #E4E4E7" : "none",
-                }}
+                key={i}
+                className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col items-center text-center gap-3"
               >
-                {/* Numbered badge */}
-                <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0 mt-0.5"
-                  style={{ backgroundColor: "#0A1628" }}
-                >
-                  {item.step}
-                </div>
+                <span className="text-gray-400">{statIcons[i]}</span>
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900 mb-1">{item.title}</h3>
-                  <p className="text-xs text-gray-500 leading-relaxed">{item.desc}</p>
+                  <div className="text-2xl font-bold text-gray-900">{s.value}</div>
+                  <div className="text-sm text-gray-500 mt-0.5">{s.label}</div>
                 </div>
               </div>
             ))}
+          </div>
+          <div className="flex justify-center mt-6">
+            <Link
+              to="/analytics"
+              className="px-6 py-2.5 text-sm font-medium rounded-lg transition-colors"
+              style={{ backgroundColor: "#0A1628", color: "white" }}
+            >
+              Аналитика →
+            </Link>
+          </div>
+        </section>
+
+        {/* ─── How it works — GRAY BG ───────────────────── */}
+        <section className="w-full bg-gray-100 py-16">
+          <div className="max-w-7xl mx-auto w-full px-8">
+            <div className="text-center mb-6">
+              <h2 className="text-xl font-bold text-gray-900">Как это работает</h2>
+              <p className="text-sm text-gray-500 mt-1">Простой и прозрачный процесс участия</p>
+            </div>
+            <div className="w-full rounded-xl border border-gray-200 bg-white flex flex-col sm:flex-row"
+              style={{ gap: "0" }}>
+              {howItWorks.map((item, i) => (
+                <div
+                  key={item.step}
+                  className="flex items-start gap-4 flex-1 p-6"
+                  style={{
+                    borderRight: i < howItWorks.length - 1 ? "1px solid #E4E4E7" : "none",
+                  }}
+                >
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0 mt-0.5"
+                    style={{ backgroundColor: "#0A1628" }}
+                  >
+                    {item.step}
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-1">{item.title}</h3>
+                    <p className="text-xs text-gray-500 leading-relaxed">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 

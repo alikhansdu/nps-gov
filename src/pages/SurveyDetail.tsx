@@ -63,7 +63,7 @@ export default function SurveyDetail() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Header activeNav="/surveys" />
+      <Header activeNav="" />
 
       <main className="flex-1 w-full max-w-7xl mx-auto flex flex-col gap-5"
         style={{ paddingLeft: "80px", paddingRight: "80px", paddingTop: "40px", paddingBottom: "24px" }}>
@@ -76,7 +76,7 @@ export default function SurveyDetail() {
         {/* Survey info card */}
         <div className="bg-white border border-gray-200 rounded-xl p-6 flex flex-col gap-4">
           <span className="text-xs font-medium px-2.5 py-1 rounded-full w-fit"
-            style={{ backgroundColor: "rgba(0,188,212,0.1)", color: "#00BCD4" }}>
+            style={{ backgroundColor: "rgba(0,188,212,0.1)", color: "#16A34A" }}>
             {survey.status}
           </span>
 

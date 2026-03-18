@@ -30,9 +30,9 @@ const SearchIcon = () => (
 
 // ─── Surveys Page ─────────────────────────────────────────
 export default function Surveys() {
-  const [search, setSearch]       = useState("");
-  const [status, setStatus]       = useState<"Все" | "Активные" | "Завершённые">("Все");
-  const [category, setCategory]   = useState("Все");
+  const [search, setSearch]     = useState("");
+  const [status, setStatus]     = useState<"Все" | "Активные" | "Завершённые">("Все");
+  const [category, setCategory] = useState("Все");
 
   const filterActive = allActiveSurveys.filter((s) => {
     const matchCat = category === "Все" || s.category === category;
@@ -46,23 +46,36 @@ export default function Surveys() {
     return matchCat && matchQ;
   });
 
-  const showActive  = status === "Все" || status === "Активные";
-  const showClosed  = status === "Все" || status === "Завершённые";
+  const showActive = status === "Все" || status === "Активные";
+  const showClosed = status === "Все" || status === "Завершённые";
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#ffffff" }}>
       <Header activeNav="/surveys" />
 
-      {/* Page title */}
-      <div className="w-full bg-white border-b border-gray-200" style={{ paddingTop: "28px", paddingBottom: "28px" }}>
+      {/* Page title — СЕРЫЙ фон */}
+      <div
+        className="w-full border-b border-gray-200"
+        style={{ paddingTop: "28px", paddingBottom: "28px", backgroundColor: "#F8FAFC" }}
+      >
         <div style={{ paddingLeft: "80px", paddingRight: "80px" }}>
           <h1 className="text-2xl font-bold text-gray-900">Опросы</h1>
           <p className="text-sm text-gray-500 mt-1">Все публичные опросы Республики Казахстан</p>
         </div>
       </div>
 
-      <main className="flex-1 w-full flex flex-col"
-        style={{ paddingLeft: "80px", paddingRight: "80px", paddingTop: "40px", paddingBottom: "80px", gap: "40px" }}>
+      {/* БЕЛЫЙ body */}
+      <main
+        className="flex-1 w-full flex flex-col"
+        style={{
+          paddingLeft: "80px",
+          paddingRight: "80px",
+          paddingTop: "40px",
+          paddingBottom: "80px",
+          gap: "40px",
+          backgroundColor: "#ffffff",
+        }}
+      >
 
         {/* Search + Status filter */}
         <div className="flex items-center gap-3 w-full">
@@ -117,8 +130,10 @@ export default function Surveys() {
           <section>
             <div className="flex items-center gap-2 mb-5">
               <h2 className="text-lg font-bold text-gray-900">Активные опросы</h2>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full text-white"
-                style={{ backgroundColor: "#0A1628" }}>
+              <span
+                className="text-xs font-semibold px-2 py-0.5 rounded-full text-white"
+                style={{ backgroundColor: "#0A1628" }}
+              >
                 {filterActive.length}
               </span>
             </div>
@@ -135,8 +150,10 @@ export default function Surveys() {
           <section style={{ marginTop: "40px" }}>
             <div className="flex items-center gap-2 mb-5">
               <h2 className="text-lg font-bold text-gray-900">Завершённые опросы</h2>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full text-white"
-                style={{ backgroundColor: "#0A1628" }}>
+              <span
+                className="text-xs font-semibold px-2 py-0.5 rounded-full text-white"
+                style={{ backgroundColor: "#0A1628" }}
+              >
                 {filterClosed.length}
               </span>
             </div>

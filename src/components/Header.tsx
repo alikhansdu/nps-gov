@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "../assets/logo.svg";
 
@@ -9,24 +10,34 @@ interface HeaderProps {
 }
 
 const ShieldIcon = () => (
-  <svg
-    width="13"
-    height="13"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-  >
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
     <polyline points="9 12 11 14 15 10" />
   </svg>
 );
 
+const MenuIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <line x1="3" y1="6" x2="21" y2="6" />
+    <line x1="3" y1="12" x2="21" y2="12" />
+    <line x1="3" y1="18" x2="21" y2="18" />
+  </svg>
+);
+
+const CloseIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
+
 const navItems = [
-  { label: "Главная", href: "/" },
-  { label: "Опросы", href: "/surveys" },
+  { label: "Главная",   href: "/" },
+  { label: "Опросы",    href: "/surveys" },
   { label: "Аналитика", href: "/analytics" },
 ];
+
+const PX = "80px";
 
 export default function Header({
   activeLang = "RU",
@@ -34,60 +45,48 @@ export default function Header({
   onLogin,
   activeNav = "/",
 }: HeaderProps) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <header
       className="w-full"
-      style={{
-        backgroundColor: "#0A1628",
-        minHeight: "114px",
-      }}
+      style={{ backgroundColor: "#0A1628", minHeight: "114px" }}
     >
       {/* Top bar */}
       <div
-        className="flex items-center justify-between px-8 py-2 border-b"
-        style={{ borderColor: "rgba(255,255,255,0.06)" }}
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-2 border-b"
+        style={{
+          paddingLeft: PX,
+          paddingRight: PX,
+          borderColor: "rgba(255,255,255,0.06)",
+        }}
       >
-        <span className="text-xs" style={{ color: "#8899bb" }}>
+        <span className="text-xs text-center sm:text-left" style={{ color: "#8899bb" }}>
           Официальный портал Республики Казахстан
         </span>
-
-        <span
-          className="flex items-center gap-1.5 text-xs"
-          style={{ color: "#8899bb" }}
-        >
+        <span className="flex items-center justify-center sm:justify-start gap-1.5 text-xs" style={{ color: "#8899bb" }}>
           <ShieldIcon /> Защищённое соединение
         </span>
       </div>
 
       {/* Main navigation */}
-      <div className="flex items-center justify-between px-8 py-5">
+      <div
+        className="flex items-center justify-between py-5"
+        style={{ paddingLeft: PX, paddingRight: PX }}
+      >
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3">
-          <img
-            src={logo}
-            alt="Герб РК"
-            className="w-10 h-10 flex-shrink-0"
-          />
-
+          <img src={logo} alt="Герб РК" className="w-10 h-10 flex-shrink-0" />
           <div>
-            <div className="text-white font-semibold text-sm leading-tight">
-              nps.gov
-            </div>
-
-            <div
-              className="text-xs"
-              style={{ color: "#8899bb" }}
-            >
-              Национальная система опросов
-            </div>
+            <div className="text-white font-semibold text-sm leading-tight">nps.gov</div>
+            <div className="text-xs" style={{ color: "#8899bb" }}>Национальная система опросов</div>
           </div>
         </Link>
 
-        {/* Navigation */}
+        {/* Navigation — desktop only */}
         <nav className="hidden md:flex items-center gap-2">
           {navItems.map((item) => {
             const isActive = activeNav === item.href;
-
             return (
               <Link
                 key={item.href}
@@ -95,9 +94,7 @@ export default function Header({
                 className="px-4 py-2 text-sm rounded-lg transition-all duration-150"
                 style={{
                   color: isActive ? "white" : "#8899bb",
-                  backgroundColor: isActive
-                    ? "rgba(255,255,255,0.08)"
-                    : "transparent",
+                  backgroundColor: isActive ? "rgba(255,255,255,0.08)" : "transparent",
                   fontWeight: isActive ? 500 : 400,
                 }}
               >
@@ -107,52 +104,111 @@ export default function Header({
           })}
         </nav>
 
-        {/* Language + Login */}
+        {/* Language + Login + Burger */}
         <div className="flex items-center gap-3">
+
+          {/* Language switcher */}
           <div
-            className="flex items-center border rounded-lg overflow-hidden"
-            style={{ borderColor: "rgba(255,255,255,0.15)" }}
+            className="flex items-center"
+            style={{
+              width: "103px",
+              height: "40px",
+              borderRadius: "8px",
+              border: "1px solid rgba(255,255,255,0.10)",
+              padding: "2px",
+              gap: "2px",
+              boxSizing: "border-box",
+            }}
           >
-            {(["RU", "KZ"] as const).map((lang) => (
-              <button
-                key={lang}
-                onClick={() => onLangChange?.(lang)}
-                className="px-3 py-1.5 text-xs font-medium transition-colors duration-150"
-                style={{
-                  color: activeLang === lang ? "#0A1628" : "#8899bb",
-                  backgroundColor: activeLang === lang ? "white" : "transparent",
-                }}
-                onMouseEnter={(e) => {
-                  if (activeLang !== lang)
-                    e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.12)";
-                }}
-                onMouseLeave={(e) => {
-                  if (activeLang !== lang)
-                    e.currentTarget.style.backgroundColor = "transparent";
-                }}
-              >
-                {lang}
-              </button>
-            ))}
+            {(["RU", "KZ"] as const).map((lang) => {
+              const isActive = activeLang === lang;
+              return (
+                <button
+                  key={lang}
+                  onClick={() => onLangChange?.(lang)}
+                  className="flex-1 h-full text-xs font-medium text-center transition-all duration-150"
+                  style={{
+                    color: isActive ? "#0A1628" : "#FFFFFF",
+                    backgroundColor: isActive ? "#F8FAFC" : "transparent",
+                    borderRadius: "6px",
+                  }}
+                >
+                  {lang}
+                </button>
+              );
+            })}
           </div>
 
-          {/* ВОЙТИ */}
+          {/* ВОЙТИ — desktop only */}
           <Link
             to="/login"
             onClick={onLogin}
-            className="px-4 py-2 text-sm font-semibold rounded-lg"
+            className="hidden sm:flex items-center justify-center text-sm font-medium transition-colors duration-150"
             style={{
-              backgroundColor: "#F5C518",
-              color: "#0A1628",
-              transition: "background-color 0.15s",
+              width: "74px",
+              height: "40px",
+              backgroundColor: "#EAB308",
+              color: "#FAFAFA",
+              borderRadius: "8px",
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+              textAlign: "center",
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e6b800")}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#F5C518")}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#ca9e06")}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#EAB308")}
           >
-            ВОЙТИ
+            Войти
           </Link>
+
+          {/* Burger — mobile only */}
+          <button
+            className="sm:hidden p-1 rounded-lg"
+            style={{ color: "white" }}
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
+            {menuOpen ? <CloseIcon /> : <MenuIcon />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile menu */}
+      {menuOpen && (
+        <div
+          className="sm:hidden border-t flex flex-col pb-4 gap-1"
+          style={{
+            paddingLeft: PX,
+            paddingRight: PX,
+            borderColor: "rgba(255,255,255,0.08)",
+          }}
+        >
+          {navItems.map((item) => {
+            const isActive = activeNav === item.href;
+            return (
+              <Link
+                key={item.href}
+                to={item.href}
+                onClick={() => setMenuOpen(false)}
+                className="px-4 py-3 text-sm rounded-lg transition-all"
+                style={{
+                  color: isActive ? "white" : "#8899bb",
+                  backgroundColor: isActive ? "rgba(255,255,255,0.08)" : "transparent",
+                  fontWeight: isActive ? 500 : 400,
+                }}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+          <Link
+            to="/login"
+            onClick={() => { setMenuOpen(false); onLogin?.(); }}
+            className="mt-2 px-4 py-3 text-sm font-medium text-center"
+            style={{ backgroundColor: "#EAB308", color: "#FAFAFA", borderRadius: "8px" }}
+          >
+            Войти
+          </Link>
+        </div>
+      )}
     </header>
   );
 }

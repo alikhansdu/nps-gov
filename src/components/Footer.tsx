@@ -1,4 +1,5 @@
 import logo from "../assets/logo.svg";
+import { Link } from "react-router-dom";
 
 const ShieldIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -6,20 +7,17 @@ const ShieldIcon = () => (
     <polyline points="9 12 11 14 15 10" />
   </svg>
 );
-
 const PhoneIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.64 3.38 2 2 0 0 1 3.62 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.97-.97a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.72 16z" />
   </svg>
 );
-
 const MailIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
     <polyline points="22,6 12,13 2,6" />
   </svg>
 );
-
 const GlobeIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <circle cx="12" cy="12" r="10" />
@@ -43,14 +41,14 @@ export default function Footer() {
 
   return (
     <footer style={{ backgroundColor: "#0A1628" }} className="w-full">
-      <div className="max-w-7xl mx-auto px-8" style={{ paddingTop: "60px", paddingBottom: "40px" }}>
+      {/* Desktop: px-8 | Mobile: px-5 (по Figma 20px) */}
+      <div className="max-w-7xl mx-auto px-5 sm:px-8" style={{ paddingTop: "60px", paddingBottom: "40px" }}>
 
         {/* Main content */}
         <div className="flex flex-col md:flex-row md:justify-between gap-10" style={{ marginBottom: "48px" }}>
 
           {/* Left: Logo + description + badge */}
-          <div className="flex flex-col gap-4" style={{ maxWidth: "280px" }}>
-            {/* Logo */}
+          <div className="flex flex-col gap-4 w-full md:w-auto" style={{ maxWidth: "340px" }}>
             <div className="flex items-center gap-3">
               <img src={logo} alt="Герб РК" className="w-10 h-10 flex-shrink-0" />
               <div>
@@ -59,20 +57,14 @@ export default function Footer() {
               </div>
             </div>
 
-            {/* Description */}
             <p className="text-sm leading-relaxed" style={{ color: "#8899bb" }}>
               Официальная платформа Республики Казахстан<br />
               для сбора общественного мнения граждан.
             </p>
 
-            {/* Badge */}
             <div
               className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs w-fit"
-              style={{
-                backgroundColor: "transparent",
-                color: "#8899bb",
-                border: "1px solid rgba(255,255,255,0.12)",
-              }}
+              style={{ color: "#8899bb", border: "1px solid rgba(255,255,255,0.12)" }}
             >
               <ShieldIcon />
               <span>Сертифицировано НЦТ РК</span>
@@ -80,26 +72,25 @@ export default function Footer() {
           </div>
 
           {/* Right: Nav + Contacts */}
-          <div className="flex flex-col sm:flex-row gap-16">
-            {/* Navigation */}
+          {/* Desktop: side by side (оригинал) | Mobile: стакаются вертикально */}
+          <div className="flex flex-col sm:flex-row gap-10 sm:gap-16">
             <div>
               <h3 className="text-white font-semibold text-sm mb-5">Навигация</h3>
               <ul className="flex flex-col gap-3">
                 {navLinks.map((link) => (
                   <li key={link.href}>
-                    <a
-                      href={link.href}
+                    <Link
+                      to={link.href}
                       className="text-sm transition-colors duration-200 hover:text-white"
                       style={{ color: "#8899bb" }}
                     >
                       {link.label}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
             </div>
 
-            {/* Contacts */}
             <div>
               <h3 className="text-white font-semibold text-sm mb-5">Контакты</h3>
               <ul className="flex flex-col gap-3">
@@ -126,17 +117,18 @@ export default function Footer() {
         <div className="w-full h-px mb-6" style={{ backgroundColor: "rgba(255,255,255,0.08)" }} />
 
         {/* Bottom bar */}
+        {/* Desktop: одна строка (оригинал) | Mobile: стакаются вертикально */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
-          <p className="text-xs" style={{ color: "#8899bb" }}>
+          <p className="text-xs order-2 md:order-1" style={{ color: "#8899bb" }}>
             © 2025 nps.gov — Национальная система опросов РК. Все права защищены.
           </p>
-          <div className="flex gap-6">
-            <a href="/privacy" className="text-xs hover:text-white transition-colors" style={{ color: "#8899bb" }}>
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 order-1 md:order-2">
+            <Link to="/privacy" className="text-xs hover:text-white transition-colors" style={{ color: "#8899bb" }}>
               Политика конфиденциальности
-            </a>
-            <a href="/terms" className="text-xs hover:text-white transition-colors" style={{ color: "#8899bb" }}>
+            </Link>
+            <Link to="/terms" className="text-xs hover:text-white transition-colors" style={{ color: "#8899bb" }}>
               Условия использования
-            </a>
+            </Link>
           </div>
         </div>
 
