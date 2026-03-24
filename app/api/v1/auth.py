@@ -1,0 +1,81 @@
+from __future__ import annotations
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jose import JWTError
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.database import get_session
+from app.core.security import create_access_token, decode_token, hash_password, verify_password
+from app.models.models import User, UserRole
+from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse, UserResponse
+
+
+router = APIRouter(prefix="/auth", tags=["auth"])
+security = HTTPBearer(auto_error=False)
+
+
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials | None = Depends(security),
+    session: AsyncSession = Depends(get_session),
+) -> User:
+    if credentials is None or not credentials.credentials:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+    token = credentials.credentials
+    try:
+        payload = decode_token(token)
+        sub = payload.get("sub")
+        if not sub:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+        user_id = int(sub)
+    except (JWTError, ValueError):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+
+    res = await session.execute(select(User).where(User.id == user_id))
+    user = res.scalar_one_or_none()
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+    return user
+
+
+@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+async def register(payload: RegisterRequest, session: AsyncSession = Depends(get_session)) -> User:
+    existing = await session.execute(select(User).where(User.iin == payload.iin))
+    if existing.scalar_one_or_none() is not None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="IIN already registered")
+
+    if payload.email is not None:
+        existing_email = await session.execute(select(User).where(User.email == str(payload.email)))
+        if existing_email.scalar_one_or_none() is not None:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
+
+    user = User(
+        iin=payload.iin,
+        name=payload.name,
+        email=str(payload.email) if payload.email is not None else None,
+        hashed_password=hash_password(payload.password),
+        role=UserRole(payload.role),
+    )
+    session.add(user)
+    await session.commit()
+    await session.refresh(user)
+    return user
+
+
+@router.post("/login", response_model=TokenResponse)
+async def login(payload: LoginRequest, session: AsyncSession = Depends(get_session)) -> TokenResponse:
+    res = await session.execute(select(User).where(User.iin == payload.iin))
+    user = res.scalar_one_or_none()
+    if user is None or not verify_password(payload.password, user.hashed_password):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+
+    token = create_access_token(subject=str(user.id))
+    return TokenResponse(access_token=token)
+
+
+@router.get("/me", response_model=UserResponse)
+async def me(current_user: User = Depends(get_current_user)) -> User:
+    return current_user
+
