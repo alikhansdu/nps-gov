@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../layouts/AdminLayout";
+import { TOKEN_KEY } from "../api/client";
 
 const TrashIcon   = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>;
 const PlusIcon    = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
@@ -21,14 +22,30 @@ interface Question {
 
 const TYPE_MAP: Record<string, "single" | "multiple" | "text"> = {
   "Один вариант":        "single",
-  "Множественный выбор": "multiple",
+  // Backend currently supports only a single option per question
+  // due to unique constraint and Response payload model.
+  "Множественный выбор": "single",
   "Текстовый ответ":     "text",
+  "Открытый вопрос":    "text",
+  "Шкала":              "single",
 };
 
-function Select({ className, children, value, onChange, style }: any) {
+function Select({
+  className,
+  children,
+  value,
+  onChange,
+  style,
+}: {
+  className?: string;
+  children: React.ReactNode;
+  value?: string;
+  onChange?: React.ChangeEventHandler<HTMLSelectElement>;
+  style?: React.CSSProperties;
+}) {
   return (
     <div className="relative" style={style}>
-      <select value={value} onChange={onChange}
+      <select value={value ?? ""} onChange={onChange}
         className={`w-full pl-3 pr-8 py-2.5 text-sm border border-gray-200 rounded-lg outline-none text-gray-700 bg-white appearance-none ${className ?? ""}`}>
         {children}
       </select>
@@ -39,7 +56,7 @@ function Select({ className, children, value, onChange, style }: any) {
 
 export default function AdminCreateSurvey() {
   const navigate = useNavigate();
-  const token    = localStorage.getItem("access_token");
+  const token    = localStorage.getItem(TOKEN_KEY);
 
   const [title, setTitle]           = useState("");
   const [description, setDesc]      = useState("");
@@ -66,8 +83,8 @@ export default function AdminCreateSurvey() {
 
   const removeQuestion = (id: number) => setQuestions((prev) => prev.filter((q) => q.id !== id));
 
-  const updateQuestion = (id: number, field: keyof Question, value: any) =>
-    setQuestions((prev) => prev.map((q) => q.id === id ? { ...q, [field]: value } : q));
+  const updateQuestion = <K extends keyof Question>(id: number, field: K, value: Question[K]) =>
+    setQuestions((prev) => prev.map((q) => (q.id === id ? { ...q, [field]: value } : q)));
 
   const addOption = (id: number) =>
     setQuestions((prev) => prev.map((q) => q.id === id ? { ...q, options: [...q.options, `Вариант ${q.options.length + 1}`] } : q));
@@ -104,24 +121,46 @@ export default function AdminCreateSurvey() {
       for (let i = 0; i < questions.length; i++) {
         const q = questions[i];
         if (!q.text.trim()) continue;
-        await fetch("/api/v1/questions", {
+        const questionType = TYPE_MAP[q.type] ?? "single";
+
+        const qRes = await fetch(`/api/v1/surveys/${survey.id}/questions`, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({
-            survey_id:     survey.id,
             question_text: q.text,
-            question_type: TYPE_MAP[q.type] ?? "single",
-            order_index:   i,
-            options: q.type !== "Текстовый ответ"
-              ? q.options.map((opt, oi) => ({ option_text: opt, order_index: oi }))
-              : [],
+            question_type: questionType,
+            order_index: i,
           }),
         });
+
+        if (!qRes.ok) {
+          const data = await qRes.json().catch(() => ({}));
+          throw new Error(data?.detail ?? "Ошибка создания вопроса");
+        }
+
+        const createdQuestion = (await qRes.json().catch(() => null)) as { id: number } | null;
+
+        if (questionType !== "text" && createdQuestion?.id != null) {
+          for (let oi = 0; oi < q.options.length; oi++) {
+            const optText = q.options[oi]?.trim();
+            if (!optText) continue;
+            const optRes = await fetch(`/api/v1/questions/${createdQuestion.id}/options`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+              body: JSON.stringify({ option_text: optText, order_index: oi }),
+            });
+            if (!optRes.ok) {
+              const data = await optRes.json().catch(() => ({}));
+              throw new Error(data?.detail ?? "Ошибка создания варианта ответа");
+            }
+          }
+        }
       }
 
       navigate("/admin");
-    } catch (e: any) {
-      setError(e.message ?? "Ошибка");
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "Ошибка";
+      setError(message);
     } finally {
       setSubmitting(false);
     }
@@ -165,7 +204,7 @@ export default function AdminCreateSurvey() {
             </div>
             <div className="flex flex-col gap-1.5">
               <label className={labelCls}>География</label>
-              <Select value={regionId} onChange={(e: any) => setRegionId(e.target.value)}>
+              <Select value={regionId} onChange={(e) => setRegionId(e.target.value)}>
                 <option value="">Вся РК</option>
                 {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
               </Select>
@@ -238,7 +277,11 @@ export default function AdminCreateSurvey() {
                   className={inputCls} />
 
                 <div className="flex items-center justify-between gap-4">
-                  <Select value={q.type} onChange={(e: any) => updateQuestion(q.id, "type", e.target.value)} style={{ width: "200px" }}>
+                  <Select
+                    value={q.type}
+                    onChange={(e) => updateQuestion(q.id, "type", e.target.value)}
+                    style={{ width: "200px" }}
+                  >
                     <option>Один вариант</option>
                     <option>Множественный выбор</option>
                     <option>Текстовый ответ</option>

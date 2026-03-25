@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { TOKEN_KEY } from "../api/client";
 
 const ShieldIcon = () => (
   <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0A1628" strokeWidth="1.5">
@@ -35,12 +36,16 @@ export default function Login() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(data?.detail ?? "Неверный ИИН или пароль");
+        const detail = data?.detail;
+        const msg = Array.isArray(detail)
+          ? detail[0]?.msg ?? "Неверный ИИН или пароль"
+          : detail ?? "Неверный ИИН или пароль";
+        setError(msg);
         return;
       }
 
       const { access_token } = await res.json();
-      localStorage.setItem("access_token", access_token);
+      localStorage.setItem(TOKEN_KEY, access_token);
 
       navigate("/admin");
     } catch {

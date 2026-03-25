@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { TOKEN_KEY } from "../api/client";
 
 // ─── Types ────────────────────────────────────────────────
 type SurveyStatus = "draft" | "active" | "completed";
@@ -36,7 +37,7 @@ function fmtDate(iso: string | null): string {
 }
 
 function authHeaders(): HeadersInit {
-  const token = localStorage.getItem("access_token");
+  const token = localStorage.getItem(TOKEN_KEY);
   return {
     "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -95,7 +96,9 @@ function SurveysTab() {
   const [showForm, setShowForm]     = useState(false);
 
   const loadSurveys = useCallback(() => {
-    setLoading(true);
+    // Avoid calling setState synchronously within effect callback chain.
+    // eslint/react-hooks rule: set-state-in-effect
+    queueMicrotask(() => setLoading(true));
     fetch(`${BASE}/surveys`, { headers: authHeaders() })
       .then((r) => {
         if (r.status === 403) throw new Error("Нет доступа (403)");

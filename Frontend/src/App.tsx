@@ -2,7 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Surveys from "./pages/Surveys";
 import SurveyDetail from "./pages/SurveyDetail";
-import Analytics from "./pages/Analytics";
+import AnalyticsFixed from "./pages/AnalyticsFixed";
 import Login from "./pages/Login";
 import AdminOverview from "./pages/AdminOverview";
 import AdminAnalytics from "./pages/AdminAnalytics";
@@ -17,7 +17,7 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/surveys" element={<Surveys />} />
       <Route path="/surveys/:id" element={<SurveyDetail />} />
-      <Route path="/analytics" element={<Analytics />} />
+      <Route path="/analytics" element={<AnalyticsFixed />} />
       <Route path="/login" element={<Login />} />
 
       {/* Admin */}

@@ -10,7 +10,7 @@ from app.api.v1.stats import router as stats_router
 from app.api.v1.regions import router as regions_router
 from app.api.v1.admin import router as admin_router
 
-app = FastAPI(title="NPS GOV API", version="1.0.0")
+app = FastAPI(title="NPS GOV API", version="1.0.0", servers=[{"url": "/api/v1"}])
 
 app.add_middleware(
     CORSMiddleware,

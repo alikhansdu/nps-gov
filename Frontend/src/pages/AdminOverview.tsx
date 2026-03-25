@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import AdminLayout from "../layouts/AdminLayout";
+import { TOKEN_KEY } from "../api/client";
 
 const BarIcon      = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>;
 const EditIcon     = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
@@ -36,6 +37,14 @@ const STATUS_MAP = {
 
 // ─── Area Chart ───────────────────────────────────────────
 function AreaChart({ data }: { data: { date: string; responses_count: number }[] }) {
+  if (!data || data.length === 0) {
+    return (
+      <div className="text-sm text-gray-400" style={{ padding: "18px 0" }}>
+        Нет данных для графика
+      </div>
+    );
+  }
+
   const W = 1188, H = 320;
   const padL = 40, padR = 8, padT = 16, padB = 28;
   const chartW = W - padL - padR;
@@ -83,8 +92,8 @@ export default function AdminOverview() {
   const [surveys, setSurveys]     = useState<SurveyFromAPI[]>([]);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
-  const token = localStorage.getItem("access_token");
-  const authHeader = { Authorization: `Bearer ${token}` };
+  const token = localStorage.getItem(TOKEN_KEY);
+  const authHeader = useMemo(() => ({ Authorization: `Bearer ${token}` }), [token]);
 
   useEffect(() => {
     // Текущий пользователь
@@ -104,7 +113,7 @@ export default function AdminOverview() {
       .then((r) => r.ok ? r.json() : [])
       .then(setSurveys)
       .catch(() => setSurveys([]));
-  }, []);
+  }, [authHeader]);
 
   const mySurveys = currentUserId
     ? surveys.filter((s) => s.created_by === currentUserId)

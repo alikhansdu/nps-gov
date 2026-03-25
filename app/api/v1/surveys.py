@@ -1,0 +1,173 @@
+from __future__ import annotations
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
+from app.core.database import get_session
+from app.core.security import decode_token
+from app.models.models import Question, Response, Survey, SurveyStatus
+from app.schemas.surveys import (
+    SurveyCreateRequest,
+    SurveyDetailResponse,
+    SurveyListItemResponse,
+    SurveyStatusUpdateRequest,
+    SurveyUpdateRequest,
+)
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+
+router = APIRouter(prefix="/surveys", tags=["surveys"])
+bearer = HTTPBearer()
+
+
+async def get_current_user_id(
+    credentials: HTTPAuthorizationCredentials = Depends(bearer),
+) -> int:
+    payload = decode_token(credentials.credentials)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    return int(payload["sub"])
+
+
+async def _count_survey_responses(session: AsyncSession, survey_id: int) -> int:
+    res = await session.execute(
+        select(func.count(Response.id)).where(Response.survey_id == survey_id)
+    )
+    return int(res.scalar() or 0)
+
+
+# ── GET /surveys ──────────────────────────────────────────────────────────────
+@router.get("", response_model=list[SurveyListItemResponse])
+async def list_surveys(
+    status_filter: str | None = Query(None),
+    region_id: int | None = Query(None),
+    session: AsyncSession = Depends(get_session),
+) -> list[SurveyListItemResponse]:
+    stmt = select(Survey).order_by(Survey.created_at.desc())
+    if status_filter is not None:
+        stmt = stmt.where(Survey.status == status_filter)
+    if region_id is not None:
+        stmt = stmt.where(Survey.region_id == region_id)
+    res = await session.execute(stmt)
+    surveys = list(res.scalars().all())
+
+    result = []
+    for survey in surveys:
+        total = await _count_survey_responses(session, survey.id)
+        item = SurveyListItemResponse.model_validate(survey).model_copy(
+            update={"total_responses": total}
+        )
+        result.append(item)
+    return result
+
+
+# ── POST /surveys ─────────────────────────────────────────────────────────────
+@router.post("", response_model=SurveyDetailResponse, status_code=201)
+async def create_survey(
+    body: SurveyCreateRequest,
+    user_id: int = Depends(get_current_user_id),
+    session: AsyncSession = Depends(get_session),
+) -> SurveyDetailResponse:
+    survey = Survey(
+        title=body.title,
+        description=body.description,
+        region_id=body.region_id,
+        end_date=body.end_date,
+        created_by=user_id,
+        status=SurveyStatus.draft,
+    )
+    session.add(survey)
+    await session.commit()
+    await session.refresh(survey)
+    res = await session.execute(
+        select(Survey)
+        .options(selectinload(Survey.questions).selectinload(Question.options))
+        .where(Survey.id == survey.id)
+    )
+    return res.scalar_one()
+
+
+# ── GET /surveys/{survey_id} ──────────────────────────────────────────────────
+@router.get("/{survey_id}", response_model=SurveyDetailResponse)
+async def get_survey(
+    survey_id: int,
+    session: AsyncSession = Depends(get_session),
+) -> SurveyDetailResponse:
+    res = await session.execute(
+        select(Survey)
+        .options(selectinload(Survey.questions).selectinload(Question.options))
+        .where(Survey.id == survey_id)
+    )
+    survey = res.scalar_one_or_none()
+    if not survey:
+        raise HTTPException(status_code=404, detail="Survey not found")
+    total = await _count_survey_responses(session, survey_id)
+    return SurveyDetailResponse.model_validate(survey).model_copy(
+        update={"total_responses": total}
+    )
+
+
+# ── PUT /surveys/{survey_id} ──────────────────────────────────────────────────
+@router.put("/{survey_id}", response_model=SurveyDetailResponse)
+async def update_survey(
+    survey_id: int,
+    body: SurveyUpdateRequest,
+    user_id: int = Depends(get_current_user_id),
+    session: AsyncSession = Depends(get_session),
+) -> SurveyDetailResponse:
+    res = await session.execute(select(Survey).where(Survey.id == survey_id))
+    survey = res.scalar_one_or_none()
+    if not survey:
+        raise HTTPException(status_code=404, detail="Survey not found")
+    if survey.created_by != user_id:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    for field, value in body.model_dump(exclude_unset=True).items():
+        setattr(survey, field, value)
+    await session.commit()
+    res = await session.execute(
+        select(Survey)
+        .options(selectinload(Survey.questions).selectinload(Question.options))
+        .where(Survey.id == survey_id)
+    )
+    return res.scalar_one()
+
+
+# ── PATCH /surveys/{survey_id}/status ────────────────────────────────────────
+@router.patch("/{survey_id}/status", response_model=SurveyListItemResponse)
+async def update_survey_status(
+    survey_id: int,
+    body: SurveyStatusUpdateRequest,
+    user_id: int = Depends(get_current_user_id),
+    session: AsyncSession = Depends(get_session),
+) -> SurveyListItemResponse:
+    res = await session.execute(select(Survey).where(Survey.id == survey_id))
+    survey = res.scalar_one_or_none()
+    if not survey:
+        raise HTTPException(status_code=404, detail="Survey not found")
+    if survey.created_by != user_id:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    survey.status = body.status
+    await session.commit()
+    await session.refresh(survey)
+    total = await _count_survey_responses(session, survey_id)
+    return SurveyListItemResponse.model_validate(survey).model_copy(
+        update={"total_responses": total}
+    )
+
+
+# ── DELETE /surveys/{survey_id} ───────────────────────────────────────────────
+@router.delete("/{survey_id}", status_code=204)
+async def delete_survey(
+    survey_id: int,
+    user_id: int = Depends(get_current_user_id),
+    session: AsyncSession = Depends(get_session),
+) -> None:
+    res = await session.execute(select(Survey).where(Survey.id == survey_id))
+    survey = res.scalar_one_or_none()
+    if not survey:
+        raise HTTPException(status_code=404, detail="Survey not found")
+    if survey.created_by != user_id:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    await session.delete(survey)
+    await session.commit()

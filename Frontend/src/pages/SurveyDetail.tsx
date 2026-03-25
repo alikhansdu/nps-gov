@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { TOKEN_KEY } from "../api/client";
 
 // ─── Types ───────────────────────────────────────────────
 interface Option {
@@ -78,8 +79,9 @@ export default function SurveyDetail() {
         if (!res.ok) throw new Error("Опрос не найден");
         const data: Survey = await res.json();
         setSurvey(data);
-      } catch (e: any) {
-        setError(e.message);
+      } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : "Ошибка загрузки опроса";
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -98,7 +100,7 @@ export default function SurveyDetail() {
     setSubmitting(true);
     setSubmitError(null);
 
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem(TOKEN_KEY);
 
     try {
       for (const question of survey.questions) {
@@ -132,8 +134,9 @@ export default function SurveyDetail() {
       }
 
       setVoted(true);
-    } catch (e: any) {
-      setSubmitError(e.message);
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "Ошибка при отправке ответа";
+      setSubmitError(message);
     } finally {
       setSubmitting(false);
     }
