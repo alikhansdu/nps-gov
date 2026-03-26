@@ -7,7 +7,7 @@ from sqlalchemy.orm import selectinload
 
 from app.core.database import get_session
 from app.core.security import decode_token
-from app.models.models import Question, Response, Survey, SurveyStatus
+from app.models.models import Question, Response, Survey, SurveyStatus, User
 from app.schemas.surveys import (
     SurveyCreateRequest,
     SurveyDetailResponse,
@@ -27,9 +27,7 @@ async def get_current_user_id(
     try:
         payload = decode_token(credentials.credentials)
     except Exception:
-        # Token can be missing/garbled in frontend-only mode; don't crash the API.
         raise HTTPException(status_code=401, detail="Invalid token")
-
     if not payload:
         raise HTTPException(status_code=401, detail="Invalid token")
     return int(payload["sub"])
@@ -40,6 +38,22 @@ async def _count_survey_responses(session: AsyncSession, survey_id: int) -> int:
         select(func.count(Response.id)).where(Response.survey_id == survey_id)
     )
     return int(res.scalar() or 0)
+
+
+async def _calc_participation(session: AsyncSession, survey_id: int) -> float:
+    unique_res = await session.execute(
+        select(func.count(func.distinct(Response.user_id))).where(Response.survey_id == survey_id)
+    )
+    unique = int(unique_res.scalar() or 0)
+
+    total_users_res = await session.execute(
+        select(func.count(User.id)).where(User.is_active == True)
+    )
+    total_users = int(total_users_res.scalar() or 0)
+
+    if total_users == 0:
+        return 0.0
+    return round(unique / total_users * 100, 1)
 
 
 # ── GET /surveys ──────────────────────────────────────────────────────────────
@@ -60,8 +74,9 @@ async def list_surveys(
     result = []
     for survey in surveys:
         total = await _count_survey_responses(session, survey.id)
+        participation = await _calc_participation(session, survey.id)
         item = SurveyListItemResponse.model_validate(survey).model_copy(
-            update={"total_responses": total}
+            update={"total_responses": total, "participation": participation}
         )
         result.append(item)
     return result
@@ -108,8 +123,9 @@ async def get_survey(
     if not survey:
         raise HTTPException(status_code=404, detail="Survey not found")
     total = await _count_survey_responses(session, survey_id)
+    participation = await _calc_participation(session, survey_id)
     return SurveyDetailResponse.model_validate(survey).model_copy(
-        update={"total_responses": total}
+        update={"total_responses": total, "participation": participation}
     )
 
 
@@ -156,8 +172,9 @@ async def update_survey_status(
     await session.commit()
     await session.refresh(survey)
     total = await _count_survey_responses(session, survey_id)
+    participation = await _calc_participation(session, survey_id)
     return SurveyListItemResponse.model_validate(survey).model_copy(
-        update={"total_responses": total}
+        update={"total_responses": total, "participation": participation}
     )
 
 

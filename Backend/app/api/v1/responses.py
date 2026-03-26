@@ -16,7 +16,6 @@ from app.schemas.responses import (
     SurveyResultsResponse,
 )
 
-
 router = APIRouter(tags=["responses"])
 
 
@@ -29,6 +28,8 @@ async def create_response(
     survey = await session.get(Survey, payload.survey_id)
     if survey is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Survey not found")
+    if survey.status != "active":
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Survey is not active")
 
     question = await session.get(Question, payload.question_id)
     if question is None or question.survey_id != payload.survey_id:
@@ -53,7 +54,7 @@ async def create_response(
         await session.rollback()
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Response for this user/survey/question already exists",
+            detail="Вы уже ответили на этот вопрос",
         )
     await session.refresh(response)
     return response
@@ -122,4 +123,3 @@ async def survey_results(survey_id: int, session: AsyncSession = Depends(get_ses
         total_responses=total_responses,
         questions=question_results,
     )
-

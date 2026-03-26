@@ -4,8 +4,8 @@ import Surveys from "./pages/Surveys";
 import SurveyDetail from "./pages/SurveyDetail";
 import AnalyticsFixed from "./pages/AnalyticsFixed";
 import Login from "./pages/Login";
-import Register from "./pages/Register";       // ← добавить
-import UserLogin from "./pages/UserLogin";     // ← добавить
+import Register from "./pages/Register";
+import UserLogin from "./pages/UserLogin";
 import AdminOverview from "./pages/AdminOverview";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminReports from "./pages/AdminReports";
@@ -21,8 +21,8 @@ export default function App() {
       <Route path="/surveys/:id" element={<SurveyDetail />} />
       <Route path="/analytics" element={<AnalyticsFixed />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />       {/* ← добавить */}
-      <Route path="/user-login" element={<UserLogin />} />   {/* ← добавить */}
+      <Route path="/register" element={<Register />} />
+      <Route path="/user-login" element={<UserLogin />} />
 
       {/* Admin */}
       <Route path="/admin" element={<AdminOverview />} />

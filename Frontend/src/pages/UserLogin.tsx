@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { TOKEN_KEY } from "../api/client";
 import { FRONTEND_ONLY } from "../config/frontendMode";
+import { useAuth } from "../context/AuthContext";
 
 export default function UserLogin() {
   const [phone, setPhone]       = useState("");
@@ -12,6 +13,7 @@ export default function UserLogin() {
   const [error, setError]       = useState<string | null>(null);
   const [loading, setLoading]   = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const formatPhone = (val: string) => {
     const digits = val.replace(/\D/g, "").slice(0, 11);
@@ -36,6 +38,7 @@ export default function UserLogin() {
     try {
       if (FRONTEND_ONLY) {
         localStorage.setItem(TOKEN_KEY, "mock.frontend.token");
+        login({ name: "Пользователь" });
         navigate("/");
         return;
       }
@@ -53,8 +56,9 @@ export default function UserLogin() {
         return;
       }
 
-      const { access_token } = await res.json();
-      localStorage.setItem(TOKEN_KEY, access_token);
+      const data = await res.json();
+      localStorage.setItem(TOKEN_KEY, data.access_token);
+      login({ name: data.full_name ?? data.username ?? phone });
       navigate("/");
     } catch {
       setError("Ошибка соединения с сервером");
