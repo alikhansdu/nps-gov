@@ -4,6 +4,8 @@ import ClosedSurveyCard from "../components/ClosedSurveyCard";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 import { Link } from "react-router-dom";
+import { FRONTEND_ONLY } from "../config/frontendMode";
+import { getMockSurveys } from "../mocks/surveyStore";
 
 // ─── Types ───────────────────────────────────────────────
 type SurveyFromAPI = {
@@ -125,6 +127,21 @@ export default function Home() {
   const [stats, setStats]                 = useState<StatsFromAPI | null>(null);
 
   useEffect(() => {
+    if (FRONTEND_ONLY) {
+      const mock = getMockSurveys();
+      const active = mock.filter((s) => s.status === "active");
+      const completed = mock.filter((s) => s.status === "completed");
+      setActiveSurveys(active.slice(0, 3).map(toActiveCard));
+      setClosedSurveys(completed.slice(0, 3).map(toClosedCard));
+      setStats({
+        total_responses: mock.reduce((sum, s) => sum + s.total_responses, 0),
+        active_surveys: active.length,
+        completed_surveys: completed.length,
+        draft_surveys: mock.filter((s) => s.status === "draft").length,
+      });
+      return;
+    }
+
     fetch("/api/v1/surveys?status_filter=active")
       .then((r) => r.ok ? r.json() : [])
       .then((data: SurveyFromAPI[]) => setActiveSurveys(data.slice(0, 3).map(toActiveCard)))
@@ -141,8 +158,6 @@ export default function Home() {
       .catch(() => setStats(null));
   }, []);
 
-  // NOTE: Labels are mapped to actual API fields from Variant 1.
-  // Variant 2 used different mock labels — API field names take priority.
   const statsDisplay = [
     { value: stats?.total_responses   ?? "—", label: "Всего ответов"       },
     { value: stats?.active_surveys    ?? "—", label: "Активных опросов"    },
@@ -155,7 +170,7 @@ export default function Home() {
       <Header activeNav="/" />
       <Hero />
 
-      <main className="flex-1 w-full flex flex-col" style={{ gap: "0", paddingTop: "80px", paddingBottom: "0" }}>
+      <main className="flex-1 w-full flex flex-col" style={{ paddingTop: "80px" }}>
 
         {/* Active Surveys */}
         <section className="max-w-7xl mx-auto w-full px-8 mb-24">
@@ -233,10 +248,7 @@ export default function Home() {
               <h2 className="text-xl font-bold text-gray-900">Как это работает</h2>
               <p className="text-sm text-gray-500 mt-1">Простой и прозрачный процесс участия</p>
             </div>
-            <div
-              className="w-full rounded-xl border border-gray-200 bg-white flex flex-col sm:flex-row"
-              style={{ gap: "0" }}
-            >
+            <div className="w-full rounded-xl border border-gray-200 bg-white flex flex-col sm:flex-row">
               {howItWorks.map((item, i) => (
                 <div
                   key={item.step}

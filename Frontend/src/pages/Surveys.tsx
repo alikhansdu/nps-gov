@@ -3,6 +3,8 @@ import ActiveSurveyCard from "../components/ActiveSurveyCard";
 import ClosedSurveyCard from "../components/ClosedSurveyCard";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { FRONTEND_ONLY } from "../config/frontendMode";
+import { getMockSurveys } from "../mocks/surveyStore";
 
 // ─── Types ───────────────────────────────────────────────
 type SurveyFromAPI = {
@@ -62,6 +64,13 @@ export default function Surveys() {
   const [closedSurveys, setClosed]  = useState<ReturnType<typeof toClosedCard>[]>([]);
 
   useEffect(() => {
+    if (FRONTEND_ONLY) {
+      const mock = getMockSurveys();
+      setActive(mock.filter((s) => s.status === "active").map(toActiveCard));
+      setClosed(mock.filter((s) => s.status === "completed").map(toClosedCard));
+      return;
+    }
+
     fetch("/api/v1/surveys?status_filter=active")
       .then((r) => r.ok ? r.json() : [])
       .then((data: SurveyFromAPI[]) => setActive(data.map(toActiveCard)))

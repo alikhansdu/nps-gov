@@ -28,7 +28,8 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    iin: Mapped[str] = mapped_column(String(12), unique=True, index=True)
+    iin: Mapped[str | None] = mapped_column(String(12), unique=True, index=True, nullable=True)
+    phone: Mapped[str | None] = mapped_column(String(20), unique=True, index=True, nullable=True)
     name: Mapped[str] = mapped_column(String(255))
     email: Mapped[str | None] = mapped_column(String(255), unique=True, index=True, nullable=True)
     hashed_password: Mapped[str] = mapped_column(String(255))
@@ -36,7 +37,7 @@ class User(Base):
     region_id: Mapped[int | None] = mapped_column(ForeignKey("regions.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     is_active: Mapped[bool] = mapped_column(default=True, server_default="true")
-    
+
     region: Mapped["Region | None"] = relationship(back_populates="users")
     surveys_created: Mapped[list["Survey"]] = relationship(back_populates="creator", foreign_keys="Survey.created_by")
     responses: Mapped[list["Response"]] = relationship(back_populates="user")
@@ -115,4 +116,3 @@ class Response(Base):
     survey: Mapped[Survey] = relationship(back_populates="responses")
     question: Mapped[Question] = relationship(back_populates="responses")
     option: Mapped[Option | None] = relationship(back_populates="responses")
-

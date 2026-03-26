@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { TOKEN_KEY } from "../api/client";
+import { FRONTEND_ONLY } from "../config/frontendMode";
 
 const ShieldIcon = () => (
   <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0A1628" strokeWidth="1.5">
@@ -28,6 +29,13 @@ export default function Login() {
     setError(null);
 
     try {
+      if (FRONTEND_ONLY) {
+        // Front-only mode: allow local mock login for UI flow.
+        localStorage.setItem(TOKEN_KEY, "mock.frontend.token");
+        navigate("/admin");
+        return;
+      }
+
       const res = await fetch("/api/v1/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

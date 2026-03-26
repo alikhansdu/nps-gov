@@ -100,7 +100,13 @@ export default function SurveyDetail() {
     setSubmitting(true);
     setSubmitError(null);
 
-    const token = localStorage.getItem(TOKEN_KEY);
+    const token = localStorage.getItem(TOKEN_KEY) ?? localStorage.getItem("access_token");
+    if (!token) {
+      setSubmitError("Требуется авторизация. Войдите в систему.");
+      setSubmitting(false);
+      window.location.href = "/login";
+      return;
+    }
 
     try {
       for (const question of survey.questions) {

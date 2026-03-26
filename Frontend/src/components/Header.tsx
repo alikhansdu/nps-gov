@@ -37,8 +37,6 @@ const navItems = [
   { label: "Аналитика", href: "/analytics" },
 ];
 
-const PX = "80px";
-
 export default function Header({
   activeLang = "RU",
   onLangChange,
@@ -54,12 +52,8 @@ export default function Header({
     >
       {/* Top bar */}
       <div
-        className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-2 border-b"
-        style={{
-          paddingLeft: PX,
-          paddingRight: PX,
-          borderColor: "rgba(255,255,255,0.06)",
-        }}
+        className="px-6 lg:px-20 flex flex-col sm:flex-row sm:items-center sm:justify-between py-2 border-b"
+        style={{ borderColor: "rgba(255,255,255,0.06)" }}
       >
         <span className="text-xs text-center sm:text-left" style={{ color: "#8899bb" }}>
           Официальный портал Республики Казахстан
@@ -71,8 +65,7 @@ export default function Header({
 
       {/* Main navigation */}
       <div
-        className="flex items-center justify-between py-5"
-        style={{ paddingLeft: PX, paddingRight: PX }}
+        className="px-6 lg:px-20 flex items-center justify-between py-5"
       >
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3">
@@ -141,7 +134,7 @@ export default function Header({
 
           {/* ВОЙТИ — desktop only */}
           <Link
-            to="/login"
+            to="/user-login"
             onClick={onLogin}
             className="hidden sm:flex items-center justify-center text-sm font-medium transition-colors duration-150"
             style={{
@@ -162,8 +155,14 @@ export default function Header({
 
           {/* Burger — mobile only */}
           <button
-            className="sm:hidden p-1 rounded-lg"
-            style={{ color: "white" }}
+            className="sm:hidden rounded-xl flex items-center justify-center"
+            style={{
+              width: "44px",
+              height: "44px",
+              backgroundColor: "#ffffff",
+              color: "#EAB308",
+              border: "1px solid rgba(255,255,255,0.12)",
+            }}
             onClick={() => setMenuOpen(!menuOpen)}
           >
             {menuOpen ? <CloseIcon /> : <MenuIcon />}
@@ -174,12 +173,8 @@ export default function Header({
       {/* Mobile menu */}
       {menuOpen && (
         <div
-          className="sm:hidden border-t flex flex-col pb-4 gap-1"
-          style={{
-            paddingLeft: PX,
-            paddingRight: PX,
-            borderColor: "rgba(255,255,255,0.08)",
-          }}
+          className="sm:hidden px-6 lg:px-20 border-t flex flex-col pb-4 gap-1"
+          style={{ borderColor: "rgba(255,255,255,0.08)" }}
         >
           {navItems.map((item) => {
             const isActive = activeNav === item.href;
@@ -200,7 +195,7 @@ export default function Header({
             );
           })}
           <Link
-            to="/login"
+            to="/user-login"
             onClick={() => { setMenuOpen(false); onLogin?.(); }}
             className="mt-2 px-4 py-3 text-sm font-medium text-center"
             style={{ backgroundColor: "#EAB308", color: "#FAFAFA", borderRadius: "8px" }}

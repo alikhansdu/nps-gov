@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../layouts/AdminLayout";
 import { TOKEN_KEY } from "../api/client";
+import { FRONTEND_ONLY } from "../config/frontendMode";
+import { addMockSurvey } from "../mocks/surveyStore";
 
 const TrashIcon   = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>;
 const PlusIcon    = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
@@ -72,6 +74,15 @@ export default function AdminCreateSurvey() {
   ]);
 
   useEffect(() => {
+    if (FRONTEND_ONLY) {
+      setRegions([
+        { id: 1, name: "Алматы" },
+        { id: 2, name: "Астана" },
+        { id: 3, name: "Шымкент" },
+      ]);
+      return;
+    }
+
     fetch("/api/v1/regions")
       .then((r) => r.ok ? r.json() : [])
       .then(setRegions)
@@ -101,6 +112,18 @@ export default function AdminCreateSurvey() {
     setError(null);
 
     try {
+      if (FRONTEND_ONLY) {
+        addMockSurvey({
+          title: title.trim(),
+          description: description.trim() || null,
+          status,
+          region_id: regionId ? parseInt(regionId, 10) : null,
+          end_date: endDate || null,
+        });
+        navigate("/admin");
+        return;
+      }
+
       // 1. Создаём опрос
       const surveyRes = await fetch("/api/v1/surveys", {
         method: "POST",

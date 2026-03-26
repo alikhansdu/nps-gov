@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import logo from "../assets/logo.svg";
 import Footer from "../components/Footer";
 import { TOKEN_KEY } from "../api/client";
+import { FRONTEND_ONLY } from "../config/frontendMode";
 
 const OverviewIcon  = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>;
 const AnalyticsIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>;
@@ -25,6 +26,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const token = localStorage.getItem(TOKEN_KEY) ?? localStorage.getItem("access_token");
 
   useEffect(() => {
+    if (!token && FRONTEND_ONLY) {
+      localStorage.setItem(TOKEN_KEY, "mock.frontend.token");
+      return;
+    }
     if (!token) {
       navigate("/login", { replace: true });
     }
@@ -50,7 +55,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     navigate("/login", { replace: true });
   };
 
-  if (!token) return null;
+  if (!token && !FRONTEND_ONLY) return null;
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row" style={{ backgroundColor: "#0A1628" }}>

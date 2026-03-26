@@ -9,8 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_session
 from app.core.security import create_access_token, decode_token, hash_password, verify_password
 from app.models.models import User, UserRole
-from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse, UserResponse
-
+from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse, UserLoginRequest, UserRegisterRequest, UserResponse
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 security = HTTPBearer(auto_error=False)
@@ -64,6 +63,26 @@ async def register(payload: RegisterRequest, session: AsyncSession = Depends(get
     return user
 
 
+@router.post("/user-register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
+async def user_register(payload: UserRegisterRequest, session: AsyncSession = Depends(get_session)) -> TokenResponse:
+    existing = await session.execute(select(User).where(User.phone == payload.phone))
+    if existing.scalar_one_or_none() is not None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Номер телефона уже зарегистрирован")
+
+    user = User(
+        name=payload.name,
+        phone=payload.phone,
+        hashed_password=hash_password(payload.password),
+        role=UserRole.citizen,
+    )
+    session.add(user)
+    await session.commit()
+    await session.refresh(user)
+
+    token = create_access_token(subject=str(user.id))
+    return TokenResponse(access_token=token)
+
+
 @router.post("/login", response_model=TokenResponse)
 async def login(payload: LoginRequest, session: AsyncSession = Depends(get_session)) -> TokenResponse:
     res = await session.execute(select(User).where(User.iin == payload.iin))
@@ -75,7 +94,17 @@ async def login(payload: LoginRequest, session: AsyncSession = Depends(get_sessi
     return TokenResponse(access_token=token)
 
 
+@router.post("/user-login", response_model=TokenResponse)
+async def user_login(payload: UserLoginRequest, session: AsyncSession = Depends(get_session)) -> TokenResponse:
+    res = await session.execute(select(User).where(User.phone == payload.phone))
+    user = res.scalar_one_or_none()
+    if user is None or not verify_password(payload.password, user.hashed_password):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Неверный номер телефона или пароль")
+
+    token = create_access_token(subject=str(user.id))
+    return TokenResponse(access_token=token)
+
+
 @router.get("/me", response_model=UserResponse)
 async def me(current_user: User = Depends(get_current_user)) -> User:
     return current_user
-

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { TOKEN_KEY } from "../api/client";
+import { FRONTEND_ONLY } from "../config/frontendMode";
 
 // ─── Types ────────────────────────────────────────────────
 type SurveyStatus = "draft" | "active" | "completed";
@@ -95,7 +96,19 @@ function SurveysTab() {
   const [formError, setFormError]   = useState<string | null>(null);
   const [showForm, setShowForm]     = useState(false);
 
+  const mockSurveys: Survey[] = [
+    { id: 1, title: "Удовлетворенность системой образования", description: "Демо-данные", status: "active", region_id: 2, created_by: 1, created_at: "2026-03-20T10:00:00Z", end_date: null, total_responses: 1267 },
+    { id: 2, title: "Качество госуслуг в регионах", description: "Демо-данные", status: "draft", region_id: null, created_by: 1, created_at: "2026-03-21T10:00:00Z", end_date: null, total_responses: 0 },
+    { id: 3, title: "Общественный транспорт", description: "Демо-данные", status: "completed", region_id: 1, created_by: 1, created_at: "2026-03-22T10:00:00Z", end_date: null, total_responses: 776 },
+  ];
+
   const loadSurveys = useCallback(() => {
+    if (FRONTEND_ONLY) {
+      setSurveys(mockSurveys);
+      setError(null);
+      setLoading(false);
+      return;
+    }
     // Avoid calling setState synchronously within effect callback chain.
     // eslint/react-hooks rule: set-state-in-effect
     queueMicrotask(() => setLoading(true));
@@ -113,6 +126,10 @@ function SurveysTab() {
   useEffect(() => { loadSurveys(); }, [loadSurveys]);
 
   async function handleDelete(id: number) {
+    if (FRONTEND_ONLY) {
+      setSurveys((prev) => prev.filter((s) => s.id !== id));
+      return;
+    }
     if (!confirm("Удалить опрос?")) return;
     const r = await fetch(`${BASE}/surveys/${id}`, {
       method: "DELETE",
@@ -123,6 +140,12 @@ function SurveysTab() {
   }
 
   async function handleStatusChange(survey: Survey) {
+    if (FRONTEND_ONLY) {
+      const next = STATUS_NEXT[survey.status];
+      if (!next) return;
+      setSurveys((prev) => prev.map((s) => (s.id === survey.id ? { ...s, status: next } : s)));
+      return;
+    }
     const next = STATUS_NEXT[survey.status];
     if (!next) return;
     const r = await fetch(`${BASE}/surveys/${survey.id}/status`, {
@@ -140,6 +163,13 @@ function SurveysTab() {
   }
 
   async function handleCreate(e: React.FormEvent) {
+    if (FRONTEND_ONLY) {
+      setForm(EMPTY_FORM);
+      setShowForm(false);
+      setFormError(null);
+      setSubmitting(false);
+      return;
+    }
     e.preventDefault();
     if (!form.title.trim()) { setFormError("Заголовок обязателен"); return; }
     setSubmitting(true);
@@ -299,7 +329,19 @@ function UsersTab() {
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState<string | null>(null);
 
+  const mockUsers: User[] = [
+    { id: 1, full_name: "Demo Admin Gov", email: "admin@example.com", role: "government", region_id: 2, created_at: "2026-03-21T10:00:00Z", is_active: true },
+    { id: 2, full_name: "Demo Citizen", email: "citizen@example.com", role: "citizen", region_id: 1, created_at: "2026-03-21T10:00:00Z", is_active: true },
+  ];
+
   useEffect(() => {
+    if (FRONTEND_ONLY) {
+      setUsers(mockUsers);
+      setError(null);
+      setLoading(false);
+      return;
+    }
+
     fetch(`${BASE}/users`, { headers: authHeaders() })
       .then((r) => {
         if (r.status === 403) throw new Error("Нет доступа (403)");
@@ -312,6 +354,10 @@ function UsersTab() {
   }, []);
 
   async function handleToggleActive(user: User) {
+    if (FRONTEND_ONLY) {
+      setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, is_active: !u.is_active } : u)));
+      return;
+    }
     const r = await fetch(`${BASE}/users/${user.id}/active`, {
       method: "PATCH",
       headers: authHeaders(),

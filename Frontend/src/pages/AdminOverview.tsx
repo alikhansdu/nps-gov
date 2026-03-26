@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import AdminLayout from "../layouts/AdminLayout";
 import { TOKEN_KEY } from "../api/client";
+import { FRONTEND_ONLY } from "../config/frontendMode";
+import { getMockSurveys } from "../mocks/surveyStore";
 
 const BarIcon      = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>;
 const EditIcon     = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
@@ -95,7 +97,38 @@ export default function AdminOverview() {
   const token = localStorage.getItem(TOKEN_KEY);
   const authHeader = useMemo(() => ({ Authorization: `Bearer ${token}` }), [token]);
 
+  const mockOverview: StatsOverview = {
+    draft_surveys: 3,
+    active_surveys: 12,
+    completed_surveys: 8,
+    total_responses: 4218650,
+    activity_last_7_days: [
+      { date: "2026-03-19", responses_count: 540 },
+      { date: "2026-03-20", responses_count: 710 },
+      { date: "2026-03-21", responses_count: 820 },
+      { date: "2026-03-22", responses_count: 430 },
+      { date: "2026-03-23", responses_count: 300 },
+      { date: "2026-03-24", responses_count: 640 },
+      { date: "2026-03-25", responses_count: 590 },
+    ],
+  };
+
   useEffect(() => {
+    if (FRONTEND_ONLY) {
+      const mockSurveys = getMockSurveys().map((s) => ({
+        id: s.id,
+        title: s.title,
+        status: s.status,
+        end_date: s.end_date,
+        total_responses: s.total_responses,
+        created_by: s.created_by,
+      }));
+      setCurrentUserId(1);
+      setOverview(mockOverview);
+      setSurveys(mockSurveys);
+      return;
+    }
+
     // Текущий пользователь
     fetch("/api/v1/auth/me", { headers: authHeader })
       .then((r) => r.ok ? r.json() : null)

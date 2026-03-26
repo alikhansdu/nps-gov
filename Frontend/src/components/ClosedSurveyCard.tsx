@@ -30,21 +30,24 @@ export default function ClosedSurveyCard({
   onResults,
 }: ClosedSurveyCardProps) {
   return (
-    <div className="bg-white border border-[#E4E4E7] rounded-xl p-5 flex flex-col gap-4 shadow-sm w-full">
+    <div className="bg-white border border-[#E4E4E7] rounded-xl p-6 flex flex-col gap-4 shadow-sm w-full">
       <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full w-fit"
         style={{ backgroundColor: "rgba(100,100,100,0.1)", color: "#6b7280" }}>
         <CheckCircleIcon /> Завершён
       </span>
 
-      <h3 className="text-base font-bold text-gray-900 leading-snug">{title}</h3>
+      <h3 className="text-lg font-bold text-gray-900 leading-snug">{title}</h3>
 
       <div className="flex flex-col gap-2 text-xs text-gray-400">
         <span className="flex items-center gap-1"><ClockIcon /> {deadline}</span>
         <span className="flex items-center gap-1"><UsersIcon /> {participants}</span>
       </div>
 
-      <button onClick={onResults}
-        className="w-full py-2.5 text-sm font-medium rounded-lg border border-[#E4E4E7] text-gray-700 hover:bg-gray-50 transition-colors">
+      <button
+        onClick={onResults}
+        className="w-full py-2.5 text-sm font-medium rounded-lg border transition-colors"
+        style={{ borderColor: "#0A1628", color: "#0A1628", backgroundColor: "#ffffff" }}
+      >
         Посмотреть результаты
       </button>
     </div>
