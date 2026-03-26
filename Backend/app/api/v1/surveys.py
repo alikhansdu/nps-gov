@@ -24,7 +24,12 @@ bearer = HTTPBearer()
 async def get_current_user_id(
     credentials: HTTPAuthorizationCredentials = Depends(bearer),
 ) -> int:
-    payload = decode_token(credentials.credentials)
+    try:
+        payload = decode_token(credentials.credentials)
+    except Exception:
+        # Token can be missing/garbled in frontend-only mode; don't crash the API.
+        raise HTTPException(status_code=401, detail="Invalid token")
+
     if not payload:
         raise HTTPException(status_code=401, detail="Invalid token")
     return int(payload["sub"])
@@ -75,7 +80,7 @@ async def create_survey(
         region_id=body.region_id,
         end_date=body.end_date,
         created_by=user_id,
-        status=SurveyStatus.draft,
+        status=SurveyStatus(body.status),
     )
     session.add(survey)
     await session.commit()
