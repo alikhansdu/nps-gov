@@ -1,7 +1,6 @@
-import { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import logo from "../assets/logo.svg";
-import { useAuth } from "../context/AuthContext";
 
 interface HeaderProps {
   activeLang?: "RU" | "KZ";
@@ -32,116 +31,11 @@ const CloseIcon = () => (
   </svg>
 );
 
-const PersonIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-    <circle cx="12" cy="8" r="4" />
-    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-  </svg>
-);
-
 const navItems = [
   { label: "Главная",   href: "/" },
   { label: "Опросы",    href: "/surveys" },
   { label: "Аналитика", href: "/analytics" },
 ];
-
-function UserDropdown() {
-  const { user, logout } = useAuth();
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  if (!user) return null;
-
-  return (
-    <div ref={ref} className="relative hidden sm:block">
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex items-center justify-center rounded-full transition-all duration-150"
-        style={{
-          width: "40px",
-          height: "40px",
-          backgroundColor: "rgba(255,255,255,0.10)",
-          border: "2px solid rgba(255,255,255,0.18)",
-          color: "#c8d8f0",
-          overflow: "hidden",
-          flexShrink: 0,
-        }}
-        onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#EAB308")}
-        onMouseLeave={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.18)")}
-      >
-        {user.avatar ? (
-          <img src={user.avatar} alt="avatar" className="w-full h-full object-cover" />
-        ) : (
-          <PersonIcon />
-        )}
-      </button>
-
-      {open && (
-        <div
-          className="absolute right-0 mt-2 z-50 rounded-xl overflow-hidden"
-          style={{
-            minWidth: "180px",
-            backgroundColor: "#0f1e36",
-            border: "1px solid rgba(255,255,255,0.10)",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
-          }}
-        >
-          {user.name && (
-            <div
-              className="px-4 py-3 text-sm font-medium border-b"
-              style={{ color: "#ffffff", borderColor: "rgba(255,255,255,0.08)" }}
-            >
-              {user.name}
-            </div>
-          )}
-
-          <Link
-            to="/profile"
-            onClick={() => setOpen(false)}
-            className="flex items-center gap-2 px-4 py-3 text-sm transition-colors"
-            style={{ color: "#8899bb" }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "#fff"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#8899bb"; }}
-          >
-            Мой профиль
-          </Link>
-
-          <Link
-            to="/my-surveys"
-            onClick={() => setOpen(false)}
-            className="flex items-center gap-2 px-4 py-3 text-sm transition-colors"
-            style={{ color: "#8899bb" }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "#fff"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#8899bb"; }}
-          >
-            Мои опросы
-          </Link>
-
-          <button
-            onClick={() => { setOpen(false); logout(); navigate("/"); }}
-            className="w-full text-left flex items-center gap-2 px-4 py-3 text-sm border-t transition-colors"
-            style={{ color: "#f87171", borderColor: "rgba(255,255,255,0.08)" }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(248,113,113,0.08)")}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-          >
-            Выйти
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
 
 export default function Header({
   activeLang = "RU",
@@ -149,11 +43,13 @@ export default function Header({
   onLogin,
   activeNav = "/",
 }: HeaderProps) {
-  const { user, logout } = useAuth(); // ← здесь берём юзера
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="w-full" style={{ backgroundColor: "#0A1628", minHeight: "114px" }}>
+    <header
+      className="w-full"
+      style={{ backgroundColor: "#0A1628", minHeight: "114px" }}
+    >
       {/* Top bar */}
       <div
         className="px-6 lg:px-20 flex flex-col sm:flex-row sm:items-center sm:justify-between py-2 border-b"
@@ -168,7 +64,10 @@ export default function Header({
       </div>
 
       {/* Main navigation */}
-      <div className="px-6 lg:px-20 flex items-center justify-between py-5">
+      <div
+        className="px-6 lg:px-20 flex items-center justify-between py-5"
+      >
+        {/* Logo */}
         <Link to="/" className="flex items-center gap-3">
           <img src={logo} alt="Герб РК" className="w-10 h-10 flex-shrink-0" />
           <div>
@@ -177,6 +76,7 @@ export default function Header({
           </div>
         </Link>
 
+        {/* Navigation — desktop only */}
         <nav className="hidden md:flex items-center gap-2">
           {navItems.map((item) => {
             const isActive = activeNav === item.href;
@@ -197,13 +97,20 @@ export default function Header({
           })}
         </nav>
 
+        {/* Language + Login + Burger */}
         <div className="flex items-center gap-3">
+
           {/* Language switcher */}
           <div
             className="flex items-center"
             style={{
-              width: "103px", height: "40px", borderRadius: "8px",
-              border: "1px solid rgba(255,255,255,0.10)", padding: "2px", gap: "2px", boxSizing: "border-box",
+              width: "103px",
+              height: "40px",
+              borderRadius: "8px",
+              border: "1px solid rgba(255,255,255,0.10)",
+              padding: "2px",
+              gap: "2px",
+              boxSizing: "border-box",
             }}
           >
             {(["RU", "KZ"] as const).map((lang) => {
@@ -225,29 +132,37 @@ export default function Header({
             })}
           </div>
 
-          {/* Аватар или Войти */}
-          {user ? (
-            <UserDropdown />
-          ) : (
-            <Link
-              to="/user-login"
-              onClick={onLogin}
-              className="hidden sm:flex items-center justify-center text-sm font-medium transition-colors duration-150"
-              style={{
-                width: "74px", height: "40px", backgroundColor: "#EAB308",
-                color: "#FAFAFA", borderRadius: "8px", whiteSpace: "nowrap", flexShrink: 0,
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#ca9e06")}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#EAB308")}
-            >
-              Войти
-            </Link>
-          )}
+          {/* ВОЙТИ — desktop only */}
+          <Link
+            to="/login"
+            onClick={onLogin}
+            className="hidden sm:flex items-center justify-center text-sm font-medium transition-colors duration-150"
+            style={{
+              width: "74px",
+              height: "40px",
+              backgroundColor: "#EAB308",
+              color: "#FAFAFA",
+              borderRadius: "8px",
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+              textAlign: "center",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#ca9e06")}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#EAB308")}
+          >
+            Войти
+          </Link>
 
-          {/* Burger */}
+          {/* Burger — mobile only */}
           <button
             className="sm:hidden rounded-xl flex items-center justify-center"
-            style={{ width: "44px", height: "44px", backgroundColor: "#ffffff", color: "#EAB308", border: "1px solid rgba(255,255,255,0.12)" }}
+            style={{
+              width: "44px",
+              height: "44px",
+              backgroundColor: "#ffffff",
+              color: "#EAB308",
+              border: "1px solid rgba(255,255,255,0.12)",
+            }}
             onClick={() => setMenuOpen(!menuOpen)}
           >
             {menuOpen ? <CloseIcon /> : <MenuIcon />}
@@ -279,35 +194,14 @@ export default function Header({
               </Link>
             );
           })}
-
-          {user ? (
-            <>
-              <Link
-                to="/profile"
-                onClick={() => setMenuOpen(false)}
-                className="mt-2 px-4 py-3 text-sm rounded-lg"
-                style={{ color: "#8899bb", backgroundColor: "rgba(255,255,255,0.04)" }}
-              >
-                👤 {user.name ?? "Мой профиль"}
-              </Link>
-              <button
-                onClick={() => { setMenuOpen(false); logout(); }}
-                className="mt-1 px-4 py-3 text-sm font-medium text-left rounded-lg"
-                style={{ color: "#f87171", backgroundColor: "rgba(248,113,113,0.06)" }}
-              >
-                Выйти
-              </button>
-            </>
-          ) : (
-            <Link
-              to="/user-login"
-              onClick={() => { setMenuOpen(false); onLogin?.(); }}
-              className="mt-2 px-4 py-3 text-sm font-medium text-center"
-              style={{ backgroundColor: "#EAB308", color: "#FAFAFA", borderRadius: "8px" }}
-            >
-              Войти
-            </Link>
-          )}
+          <Link
+            to="/login"
+            onClick={() => { setMenuOpen(false); onLogin?.(); }}
+            className="mt-2 px-4 py-3 text-sm font-medium text-center"
+            style={{ backgroundColor: "#EAB308", color: "#FAFAFA", borderRadius: "8px" }}
+          >
+            Войти
+          </Link>
         </div>
       )}
     </header>

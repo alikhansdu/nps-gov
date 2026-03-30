@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { FRONTEND_ONLY } from "../config/frontendMode";
 import { getMockSurveys } from "../mocks/surveyStore";
 
+// ─── Types ───────────────────────────────────────────────
 type SurveyFromAPI = {
   id: number;
   title: string;
@@ -14,7 +15,6 @@ type SurveyFromAPI = {
   status: "draft" | "active" | "completed";
   region_id: number | null;
   created_by: number;
-  creator_name?: string;
   created_at: string;
   end_date: string | null;
   total_responses: number;
@@ -27,6 +27,7 @@ type StatsFromAPI = {
   draft_surveys: number;
 };
 
+// ─── Helpers ─────────────────────────────────────────────
 function formatDeadline(end_date: string | null): string {
   if (!end_date) return "Без срока";
   const d = new Date(end_date);
@@ -39,7 +40,7 @@ function toActiveCard(s: SurveyFromAPI) {
     title:         s.title,
     description:   s.description ?? "",
     region:        s.region_id ? `Регион ${s.region_id}` : "Вся РК",
-    initiator:     s.creator_name,
+    initiator:     `Автор #${s.created_by}`,
     deadline:      formatDeadline(s.end_date),
     participants:  s.total_responses.toLocaleString("ru-RU"),
     participation: 0,
@@ -55,6 +56,7 @@ function toClosedCard(s: SurveyFromAPI) {
   };
 }
 
+// ─── Icons ───────────────────────────────────────────────
 const ChevronRight = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <polyline points="9 18 15 12 9 6" />
@@ -68,12 +70,14 @@ const ShieldIcon = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="n
 
 const statIcons = [<VoteIcon />, <TrendIcon />, <CheckSq />, <StarIcon />];
 
+// ─── Static content ───────────────────────────────────────
 const howItWorks = [
   { step: "1", title: "Авторизация",      desc: "Войдите через ЭЦП или систему eGov для верификации личности гражданина РК." },
   { step: "2", title: "Участие в опросе", desc: "Выберите интересующий опрос, ознакомьтесь с описанием и оставьте свой голос." },
   { step: "3", title: "Влияние",          desc: "Ваш голос учитывается при принятии государственных решений. Результаты публичны." },
 ];
 
+// ─── Hero ─────────────────────────────────────────────────
 function Hero() {
   return (
     <section className="relative w-full overflow-hidden" style={{ backgroundColor: "#1E3A66" }}>
@@ -92,20 +96,18 @@ function Hero() {
           Участвуйте в принятии государственных решений.
         </p>
         <div className="flex flex-wrap gap-3">
-          <Link
-            to="/surveys"
+          <button
             className="px-6 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2"
             style={{ backgroundColor: "#F5C518", color: "#0A1628" }}
           >
             Принять участие →
-          </Link>
-          <Link
-            to="/analytics"
+          </button>
+          <button
             className="px-6 py-2.5 rounded-lg text-sm font-medium border hover:bg-white/10 transition-colors"
             style={{ color: "white", borderColor: "rgba(255,255,255,0.4)", backgroundColor: "rgba(255,255,255,0.08)" }}
           >
             Посмотреть результаты
-          </Link>
+          </button>
         </div>
       </div>
       <div className="absolute bottom-0 left-0 w-full" style={{ lineHeight: 0 }}>
@@ -118,6 +120,7 @@ function Hero() {
   );
 }
 
+// ─── Main Page ───────────────────────────────────────────
 export default function Home() {
   const [activeSurveys, setActiveSurveys] = useState<ReturnType<typeof toActiveCard>[]>([]);
   const [closedSurveys, setClosedSurveys] = useState<ReturnType<typeof toClosedCard>[]>([]);
@@ -210,39 +213,30 @@ export default function Home() {
 
         {/* Statistics */}
         <section className="max-w-7xl mx-auto w-full px-8 py-16">
-          <div className="text-center mb-8">
+          <div className="text-center mb-6">
             <h2 className="text-xl font-bold text-gray-900">Общая статистика</h2>
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {statsDisplay.map((s, i) => (
               <div
                 key={i}
-                className="flex flex-col items-center text-center rounded-xl p-6"
-                style={{ border: "1px solid #e5e7eb", backgroundColor: "white" }}
+                className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col items-center text-center gap-3"
               >
-                <div
-                  className="flex items-center justify-center rounded-lg mb-4"
-                  style={{
-                    width: "44px",
-                    height: "44px",
-                    backgroundColor: "#f3f4f6",
-                    color: "#6b7280",
-                  }}
-                >
-                  {statIcons[i]}
+                <span className="text-gray-400">{statIcons[i]}</span>
+                <div>
+                  <div className="text-2xl font-bold text-gray-900">{s.value}</div>
+                  <div className="text-sm text-gray-500 mt-0.5">{s.label}</div>
                 </div>
-                <div className="text-3xl font-bold text-gray-900 mb-1">{s.value}</div>
-                <div className="text-sm text-gray-500">{s.label}</div>
               </div>
             ))}
           </div>
-          <div className="flex justify-center">
+          <div className="flex justify-center mt-6">
             <Link
-              to="/surveys"
-              className="px-6 py-2.5 text-sm font-semibold rounded-lg transition-colors flex items-center gap-2"
+              to="/analytics"
+              className="px-6 py-2.5 text-sm font-medium rounded-lg transition-colors"
               style={{ backgroundColor: "#0A1628", color: "white" }}
             >
-              Проголосовать →
+              Аналитика →
             </Link>
           </div>
         </section>

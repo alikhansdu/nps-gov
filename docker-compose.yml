@@ -1,6 +1,19 @@
 version: "3.9"
-
 services:
+  migrate:
+    build: ./backend
+    container_name: migrate
+    restart: "no"
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:${POSTGRES_PORT}/${POSTGRES_DB}
+    command: alembic upgrade head
+    volumes:
+      - ./backend/alembic/versions:/app/alembic/versions
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   backend:
     build: ./backend
     container_name: backend
@@ -11,6 +24,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:${POSTGRES_PORT}/${POSTGRES_DB}
 

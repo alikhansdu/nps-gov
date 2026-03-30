@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { TOKEN_KEY } from "../api/client";
@@ -59,12 +59,12 @@ const MessageIcon = () => (
 // ─── Page ─────────────────────────────────────────────────
 export default function SurveyDetail() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
 
   const [survey, setSurvey] = useState<Survey | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // answers: { [question_id]: { option_id?: number, text_answer?: string } }
   const [answers, setAnswers] = useState<Record<number, { option_id?: number; text_answer?: string }>>({});
   const [comment, setComment] = useState("");
   const [voted, setVoted] = useState(false);
@@ -100,20 +100,25 @@ export default function SurveyDetail() {
     setSubmitting(true);
     setSubmitError(null);
 
-    const token = localStorage.getItem(TOKEN_KEY);
+    const token = localStorage.getItem(TOKEN_KEY) ?? localStorage.getItem("access_token");
     if (!token) {
       setSubmitError("Требуется авторизация. Войдите в систему.");
       setSubmitting(false);
-      navigate("/user-login");
+      window.location.href = "/login";
       return;
     }
 
     try {
       for (const question of survey.questions) {
         const answer = answers[question.id];
-        const text_answer = question.question_type === "text" ? comment || null : null;
+
+        // text вопрос — берём comment
+        const text_answer =
+          question.question_type === "text" ? comment || null : null;
+
         const option_id = answer?.option_id ?? null;
 
+        // пропускаем если нет ответа на text-вопрос и нет option
         if (option_id === null && text_answer === null) continue;
 
         const res = await fetch("/api/v1/responses", {
@@ -130,17 +135,7 @@ export default function SurveyDetail() {
           }),
         });
 
-        if (res.status === 409) {
-          setSubmitError("Вы уже проходили этот опрос.");
-          setSubmitting(false);
-          return;
-        }
-        if (res.status === 401) {
-          setSubmitError("Сессия истекла. Войдите снова.");
-          setSubmitting(false);
-          navigate("/user-login");
-          return;
-        }
+        if (res.status === 409) continue; // уже отвечал — ок
         if (!res.ok) throw new Error("Ошибка при отправке ответа");
       }
 
@@ -156,7 +151,7 @@ export default function SurveyDetail() {
   // ── Все обязательные вопросы отвечены? ───────────────────
   const allAnswered =
     survey?.questions.every((q) => {
-      if (q.question_type === "text") return true;
+      if (q.question_type === "text") return comment.trim().length > 0 || true; // текст необязателен
       return answers[q.id]?.option_id !== undefined;
     }) ?? false;
 

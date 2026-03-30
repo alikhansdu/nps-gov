@@ -1,18 +1,21 @@
-# env.py
 import sys
 import os
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
 
-# добавляем путь к Backend, чтобы импортировать app
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from app.core.database import Base  # <- теперь корректно
-target_metadata = Base.metadata
 
 config = context.config
 fileConfig(config.config_file_name)
+
+if os.environ.get("DATABASE_URL"):
+    sync_url = os.environ["DATABASE_URL"].replace("postgresql+asyncpg://", "postgresql+psycopg2://")
+    config.set_main_option("sqlalchemy.url", sync_url)
+
+from app.core.base import Base
+import app.models
+target_metadata = Base.metadata
 
 def run_migrations_offline():
     url = config.get_main_option("sqlalchemy.url")
