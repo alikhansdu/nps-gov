@@ -115,6 +115,11 @@ def upgrade():
         );
     """)
 
+    # --- ENSURE COLUMNS EXIST (idempotent) ---
+    op.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS age INTEGER;")
+    op.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS gender VARCHAR(10);")
+    op.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS organization VARCHAR(255);")
+
     # --- SEED DATA (only if regions is empty) ---
     count = conn.execute(sa.text("SELECT COUNT(*) FROM regions")).scalar()
     if count > 0:
