@@ -14,6 +14,8 @@ type SurveyFromAPI = {
   description: string | null;
   status: "draft" | "active" | "completed";
   region_id: number | null;
+  region_name: string | null;   // добавь
+  creator_name: string; 
   created_by: number;
   created_at: string;
   end_date: string | null;
@@ -39,8 +41,8 @@ function toActiveCard(s: SurveyFromAPI) {
     id:            s.id,
     title:         s.title,
     description:   s.description ?? "",
-    region:        s.region_id ? `Регион ${s.region_id}` : "Вся РК",
-    initiator:     `Автор #${s.created_by}`,
+    region:        s.region_name ?? "Вся РК",        // было: `Регион ${s.region_id}`
+    initiator:     s.creator_name, 
     deadline:      formatDeadline(s.end_date),
     participants:  s.total_responses.toLocaleString("ru-RU"),
     participation: 0,

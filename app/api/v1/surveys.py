@@ -44,11 +44,19 @@ async def list_surveys(
     region_id: int | None = Query(None),
     session: AsyncSession = Depends(get_session),
 ) -> list[SurveyListItemResponse]:
-    stmt = select(Survey).order_by(Survey.created_at.desc())
+    stmt = (
+        select(Survey)
+        .options(
+            selectinload(Survey.creator),
+            selectinload(Survey.region),
+        )
+        .order_by(Survey.created_at.desc())
+    )
     if status_filter is not None:
         stmt = stmt.where(Survey.status == status_filter)
     if region_id is not None:
         stmt = stmt.where(Survey.region_id == region_id)
+
     res = await session.execute(stmt)
     surveys = list(res.scalars().all())
 
@@ -56,7 +64,11 @@ async def list_surveys(
     for survey in surveys:
         total = await _count_survey_responses(session, survey.id)
         item = SurveyListItemResponse.model_validate(survey).model_copy(
-            update={"total_responses": total}
+            update={
+                "total_responses": total,
+                "creator_name": survey.creator.name if survey.creator else "Государственный орган РК",
+                "region_name": survey.region.name if survey.region else None,
+            }
         )
         result.append(item)
     return result

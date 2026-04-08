@@ -11,6 +11,33 @@ type StatsOverview = {
   activity_last_7_days: Array<{ date: string; responses_count: number }>;
 };
 
+type RegionSurveyItem = {
+  label: string;
+  total_surveys: number;
+  completed_surveys: number;
+  completion_rate: number;
+};
+
+type AgeGroupItem = {
+  label: string;
+  count: number;
+  pct: number;
+};
+
+type GenderItem = {
+  label: string;
+  count: number;
+  pct: number;
+};
+
+type AdvancedStats = {
+  region_survey_stats: RegionSurveyItem[];
+  age_group_stats: AgeGroupItem[];
+  gender_stats: GenderItem[];
+  comment_rate: number;
+  repeat_participants_rate: number;
+};
+
 function formatRuNumber(value: number | null | undefined): string {
   if (value === null || value === undefined) return "—";
   return value.toLocaleString("ru-RU");
@@ -21,48 +48,6 @@ const VoteIcon    = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="
 const TrendIcon   = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>;
 const UsersIcon   = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
 const ClockIcon   = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
-
-// ─── Mock static data ─────────────────────────────────────
-const regionStats = [
-  { name: "Алматы",       pct: 68 },
-  { name: "Астана",       pct: 35 },
-  { name: "Шымкент",      pct: 65 },
-  { name: "Карагандинская", pct: 0 },
-  { name: "ВКО",          pct: 100 },
-  { name: "Актюбинская",  pct: 71 },
-  { name: "Павлодарская", pct: 20 },
-];
-
-const ageGroups = [
-  { label: "18–24", pct: 42 },
-  { label: "25–34", pct: 78 },
-  { label: "35–44", pct: 55 },
-  { label: "45–54", pct: 33 },
-  { label: "55–64", pct: 48 },
-  { label: "65+",   pct: 60 },
-];
-
-const topicStats = [
-  { label: "18–24", pct: 55 },
-  { label: "25–34", pct: 80 },
-  { label: "35–44", pct: 60 },
-  { label: "45–54", pct: 40 },
-  { label: "55–64", pct: 65 },
-  { label: "65–74", pct: 72 },
-];
-
-const decisions = [
-  { date: "До 15 марта 2026", status: "Реализовано",  statusColor: "#16a34a", title: "Удовлетворённость системой образования", desc: "Выделено дополнительное финансирование на повышение квалификации учителей — 45 млрд тенге", votes: "384 920", support: "78%" },
-  { date: "До 15 марта 2026", status: "В процессе",   statusColor: "#d97706", title: "Удовлетворённость системой образования", desc: "Выделено дополнительное финансирование на повышение квалификации учителей — 45 млрд тенге", votes: "384 920", support: "78%" },
-  { date: "До 15 марта 2026", status: "Отклонено",    statusColor: "#dc2626", title: "Удовлетворённость системой образования", desc: "Выделено дополнительное финансирование на повышение квалификации учителей — 45 млрд тенге", votes: "384 920", support: "78%" },
-  { date: "До 15 марта 2026", status: "Реализовано",  statusColor: "#16a34a", title: "Удовлетворённость системой образования", desc: "Выделено дополнительное финансирование на повышение квалификации учителей — 45 млрд тенге", votes: "384 920", support: "78%" },
-];
-
-const changes = [
-  { icon: "✅", statusColor: "#16a34a", status: "Реализовано",  title: "Улучшение качества образования", desc: "Повышение зарплат педагогов на 25%, программа переподготовки, новые учебники" },
-  { icon: "🔄", statusColor: "#d97706", status: "В процессе",   title: "Улучшение качества образования", desc: "Повышение зарплат педагогов на 25%, программа переподготовки, новые учебники" },
-  { icon: "🔄", statusColor: "#d97706", status: "В процессе",   title: "Улучшение качества образования", desc: "Повышение зарплат педагогов на 25%, программа переподготовки, новые учебники" },
-];
 
 // ─── Donut Chart ──────────────────────────────────────────
 function DonutChart({ women, men: _men }: { women: number; men: number }) {
@@ -127,20 +112,32 @@ function AreaChart({ data }: { data: Array<{ date: string; responses_count: numb
 // ─── Main ─────────────────────────────────────────────────
 export default function AnalyticsFixed() {
   const [overview, setOverview] = useState<StatsOverview | null>(null);
+  const [advanced, setAdvanced] = useState<AdvancedStats | null>(null);
 
   useEffect(() => {
     fetch("/api/v1/stats/overview")
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => setOverview(data))
       .catch(() => {});
+
+    fetch("/api/v1/stats/advanced")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => setAdvanced(data))
+      .catch(() => {});
   }, []);
 
   const statCards = useMemo(() => [
     { label: "Всего голосов",      value: formatRuNumber(overview?.total_responses),   icon: <VoteIcon /> },
-    { label: "Уровень участия",    value: "67.4%",                                      icon: <TrendIcon /> },
-    { label: "Онлайн сейчас",      value: formatRuNumber(overview?.active_surveys),    icon: <UsersIcon /> },
+    { label: "Уровень участия",    value: advanced ? `${advanced.repeat_participants_rate}%` : "—", icon: <TrendIcon /> },
+    { label: "Активных опросов",   value: formatRuNumber(overview?.active_surveys),    icon: <UsersIcon /> },
     { label: "Завершённых опросов", value: formatRuNumber(overview?.completed_surveys), icon: <ClockIcon /> },
-  ], [overview]);
+  ], [overview, advanced]);
+
+  const womenPct = advanced?.gender_stats.find(g => g.label === "Женщины")?.pct ?? 54;
+  const menPct   = advanced?.gender_stats.find(g => g.label === "Мужчины")?.pct ?? 46;
+
+  const regionStats = advanced?.region_survey_stats ?? [];
+  const ageGroups   = advanced?.age_group_stats ?? [];
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#F8FAFC" }}>
@@ -178,19 +175,23 @@ export default function AnalyticsFixed() {
 
           <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm">
             <h3 className="text-sm font-semibold text-gray-900 mb-4">Завершённые опросы</h3>
-            <div className="flex flex-col gap-3">
-              {regionStats.map((r) => (
-                <div key={r.name} className="flex flex-col gap-1">
-                  <div className="flex justify-between text-xs text-gray-500">
-                    <span>{r.name}</span>
-                    <span>{r.pct}%</span>
+            {regionStats.length === 0 ? (
+              <div className="text-sm text-gray-400">Нет данных</div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {regionStats.map((r) => (
+                  <div key={r.label} className="flex flex-col gap-1">
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>{r.label}</span>
+                      <span>{r.completion_rate}%</span>
+                    </div>
+                    <div className="w-full rounded-full" style={{ height: "6px", backgroundColor: "#e5e7eb" }}>
+                      <div className="rounded-full h-full" style={{ width: `${r.completion_rate}%`, backgroundColor: "#1E3A66" }} />
+                    </div>
                   </div>
-                  <div className="w-full rounded-full" style={{ height: "6px", backgroundColor: "#e5e7eb" }}>
-                    <div className="rounded-full h-full" style={{ width: `${r.pct}%`, backgroundColor: "#1E3A66" }} />
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -199,46 +200,60 @@ export default function AnalyticsFixed() {
           {/* Horizontal bar — age */}
           <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
             <h3 className="text-sm font-semibold text-gray-900 mb-4">Возрастные группы</h3>
-            <div className="flex flex-col gap-3">
-              {ageGroups.map((g) => (
-                <div key={g.label} className="flex items-center gap-3">
-                  <span className="text-xs text-gray-500 w-10 flex-shrink-0">{g.label}</span>
-                  <div className="flex-1 rounded-full" style={{ height: "10px", backgroundColor: "#e5e7eb" }}>
-                    <div className="rounded-full h-full" style={{ width: `${g.pct}%`, backgroundColor: "#1E3A66" }} />
+            {ageGroups.length === 0 ? (
+              <div className="text-sm text-gray-400">Нет данных</div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {ageGroups.map((g) => (
+                  <div key={g.label} className="flex items-center gap-3">
+                    <span className="text-xs text-gray-500 w-10 flex-shrink-0">{g.label}</span>
+                    <div className="flex-1 rounded-full" style={{ height: "10px", backgroundColor: "#e5e7eb" }}>
+                      <div className="rounded-full h-full" style={{ width: `${g.pct}%`, backgroundColor: "#1E3A66" }} />
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Donut chart */}
+          {/* Donut chart — gender */}
           <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm flex flex-col items-center">
-            <h3 className="text-sm font-semibold text-gray-900 mb-4 self-start">Возрастные группы</h3>
-            <DonutChart women={54} men={46} />
+            <h3 className="text-sm font-semibold text-gray-900 mb-4 self-start">Пол участников</h3>
+            <DonutChart women={womenPct} men={menPct} />
             <div className="flex gap-6 mt-4 text-xs text-gray-600">
               <span className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: "#1E3A66" }} />
-                Женщины — 54%
+                Женщины — {womenPct}%
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: "#EAB308" }} />
-                Мужчины — 46%
+                Мужчины — {menPct}%
               </span>
             </div>
           </div>
 
-          {/* Horizontal bar — topics (yellow) */}
+          {/* Horizontal bar — comments rate */}
           <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">По тематике</h3>
-            <div className="flex flex-col gap-3">
-              {topicStats.map((g) => (
-                <div key={g.label} className="flex items-center gap-3">
-                  <span className="text-xs text-gray-500 w-10 flex-shrink-0">{g.label}</span>
-                  <div className="flex-1 rounded-full" style={{ height: "10px", backgroundColor: "#e5e7eb" }}>
-                    <div className="rounded-full h-full" style={{ width: `${g.pct}%`, backgroundColor: "#EAB308" }} />
-                  </div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-4">Поведение участников</h3>
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1">
+                <div className="flex justify-between text-xs text-gray-500">
+                  <span>Оставляют комментарий</span>
+                  <span>{advanced?.comment_rate ?? "—"}%</span>
                 </div>
-              ))}
+                <div className="w-full rounded-full" style={{ height: "10px", backgroundColor: "#e5e7eb" }}>
+                  <div className="rounded-full h-full" style={{ width: `${advanced?.comment_rate ?? 0}%`, backgroundColor: "#EAB308" }} />
+                </div>
+              </div>
+              <div className="flex flex-col gap-1">
+                <div className="flex justify-between text-xs text-gray-500">
+                  <span>Повторные участники</span>
+                  <span>{advanced?.repeat_participants_rate ?? "—"}%</span>
+                </div>
+                <div className="w-full rounded-full" style={{ height: "10px", backgroundColor: "#e5e7eb" }}>
+                  <div className="rounded-full h-full" style={{ width: `${advanced?.repeat_participants_rate ?? 0}%`, backgroundColor: "#EAB308" }} />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -248,61 +263,6 @@ export default function AnalyticsFixed() {
           <h3 className="text-sm font-semibold text-gray-900 mb-1">Динамика участия</h3>
           <p className="text-xs text-gray-400 mb-4">Ежедневная активность голосований за последние 7 дней</p>
           <AreaChart data={overview?.activity_last_7_days ?? []} />
-        </div>
-
-        {/* Хронология + Принятые изменения */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Хронология решений */}
-          <div className="flex flex-col gap-4">
-            <h3 className="text-base font-bold text-gray-900">Хронология решений</h3>
-            {decisions.map((d, i) => (
-              <div key={i} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex flex-col gap-2">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-gray-400">{d.date}</span>
-                  <span
-                    className="text-xs font-medium px-2 py-0.5 rounded-full"
-                    style={{ backgroundColor: `${d.statusColor}18`, color: d.statusColor }}
-                  >
-                    {d.status}
-                  </span>
-                </div>
-                <div className="text-sm font-semibold text-gray-900">{d.title}</div>
-                <div className="text-xs text-gray-500">{d.desc}</div>
-                <div className="flex gap-4 text-xs text-gray-500">
-                  <span><b className="text-gray-900">{d.votes}</b> голосов</span>
-                  <span>Поддержка: <b className="text-gray-900">{d.support}</b></span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Принятые изменения */}
-          <div className="flex flex-col gap-4">
-            <h3 className="text-base font-bold text-gray-900">Принятые изменения</h3>
-            {changes.map((c, i) => (
-              <div key={i} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex flex-col gap-2">
-                <div className="text-lg">{c.icon}</div>
-                <div className="text-xs text-gray-400">Какие действия предприняты:</div>
-                <div className="text-sm font-semibold text-gray-900">{c.title}</div>
-                <div className="text-xs text-gray-500">{c.desc}</div>
-                <div className="flex items-center justify-between mt-1">
-                  <span
-                    className="text-xs font-medium px-2 py-0.5 rounded-full"
-                    style={{ backgroundColor: `${c.statusColor}18`, color: c.statusColor }}
-                  >
-                    {c.status}
-                  </span>
-                  <a href="#" className="text-xs text-blue-500 hover:underline">Подробнее →</a>
-                </div>
-              </div>
-            ))}
-            <div
-              className="rounded-xl p-4 text-xs text-gray-600 leading-relaxed"
-              style={{ backgroundColor: "#EFF6FF" }}
-            >
-              Все решения принимаются в соответствии с Законом РК «О доступе к информации» и публикуются в открытом доступе на данном портале.
-            </div>
-          </div>
         </div>
 
       </main>

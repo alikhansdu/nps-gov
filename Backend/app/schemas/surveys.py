@@ -38,13 +38,13 @@ class SurveyListItemResponse(BaseModel):
     description: str | None
     created_by: int
     creator_name: str = "Государственный орган РК"
+    region_name: str | None = None
     status: SurveyStatusLiteral
     region_id: int | None
     created_at: datetime
     end_date: date | None
     total_responses: int = 0
     participation: float = 0.0
-
 
 class SurveyDetailResponse(SurveyListItemResponse):
     questions: list[QuestionResponse] = []

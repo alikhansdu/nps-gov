@@ -37,6 +37,9 @@ class User(Base):
     region_id: Mapped[int | None] = mapped_column(ForeignKey("regions.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     is_active: Mapped[bool] = mapped_column(default=True, server_default="true")
+    age: Mapped[int | None] = mapped_column(nullable=True)
+    gender: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    organization: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     region: Mapped["Region | None"] = relationship(back_populates="users")
     surveys_created: Mapped[list["Survey"]] = relationship(back_populates="creator", foreign_keys="Survey.created_by")

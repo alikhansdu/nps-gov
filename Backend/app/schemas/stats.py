@@ -21,7 +21,29 @@ class RegionStatsItem(BaseModel):
     responses_count: int
 
 
+class RegionSurveyItem(BaseModel):
+    label: str
+    total_surveys: int
+    completed_surveys: int
+    completion_rate: float
+
+
+class AgeGroupItem(BaseModel):
+    label: str
+    count: int
+    pct: float
+
+
+class GenderItem(BaseModel):
+    label: str
+    count: int
+    pct: float
+
+
 class AdvancedStatsResponse(BaseModel):
     region_stats: list[RegionStatsItem]
+    region_survey_stats: list[RegionSurveyItem]
+    age_group_stats: list[AgeGroupItem]
+    gender_stats: list[GenderItem]
     comment_rate: float
     repeat_participants_rate: float

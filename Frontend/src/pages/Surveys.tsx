@@ -6,19 +6,19 @@ import Footer from "../components/Footer";
 import { FRONTEND_ONLY } from "../config/frontendMode";
 import { getMockSurveys } from "../mocks/surveyStore";
 
-// ─── Types ───────────────────────────────────────────────
 type SurveyFromAPI = {
   id: number;
   title: string;
   description: string | null;
   status: "draft" | "active" | "completed";
   region_id: number | null;
+  region_name: string | null;
+  creator_name: string;
   created_by: number;
   end_date: string | null;
   total_responses: number;
 };
 
-// ─── Helpers ─────────────────────────────────────────────
 function formatDeadline(end_date: string | null): string {
   if (!end_date) return "Без срока";
   return "До " + new Date(end_date).toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" });
@@ -29,8 +29,8 @@ function toActiveCard(s: SurveyFromAPI) {
     id:            s.id,
     title:         s.title,
     description:   s.description ?? "",
-    region:        s.region_id ? `Регион ${s.region_id}` : "Вся РК",
-    initiator:     `Автор #${s.created_by}`,
+    region:        s.region_name ?? "Вся РК",
+    initiator:     s.creator_name,
     deadline:      formatDeadline(s.end_date),
     participants:  s.total_responses.toLocaleString("ru-RU"),
     participation: 0,
@@ -48,26 +48,24 @@ function toClosedCard(s: SurveyFromAPI) {
 
 const categories = ["Все", "Инфраструктура", "Здравоохранение", "Цифровизация", "Экономика", "Экология", "Образование"];
 
-// ─── Search Icon ─────────────────────────────────────────
 const SearchIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
   </svg>
 );
 
-// ─── Surveys Page ─────────────────────────────────────────
 export default function Surveys() {
-  const [search, setSearch]         = useState("");
-  const [status, setStatus]         = useState<"Все" | "Активные" | "Завершённые">("Все");
-  const [category, setCategory]     = useState("Все");
-  const [activeSurveys, setActive]  = useState<ReturnType<typeof toActiveCard>[]>([]);
-  const [closedSurveys, setClosed]  = useState<ReturnType<typeof toClosedCard>[]>([]);
+  const [search, setSearch]       = useState("");
+  const [status, setStatus]       = useState<"Все" | "Активные" | "Завершённые">("Все");
+  const [category, setCategory]   = useState("Все");
+  const [activeSurveys, setActive] = useState<ReturnType<typeof toActiveCard>[]>([]);
+  const [closedSurveys, setClosed] = useState<ReturnType<typeof toClosedCard>[]>([]);
 
   useEffect(() => {
     if (FRONTEND_ONLY) {
       const mock = getMockSurveys();
-      setActive(mock.filter((s) => s.status === "active").map(toActiveCard));
-      setClosed(mock.filter((s) => s.status === "completed").map(toClosedCard));
+      setActive(mock.filter((s) => s.status === "active").map((s) => toActiveCard({ ...s, region_name: null, creator_name: `Автор #${s.created_by}` })));
+      setClosed(mock.filter((s) => s.status === "completed").map((s) => toClosedCard({ ...s, region_name: null, creator_name: "" })));
       return;
     }
 

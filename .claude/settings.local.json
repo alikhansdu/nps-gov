@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Projects/oqyrman diploma/oqyrman_frontend/**)",
+      "Bash(dart analyze:*)"
+    ]
+  }
+}
