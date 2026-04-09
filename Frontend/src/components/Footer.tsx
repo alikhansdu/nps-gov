@@ -42,13 +42,13 @@ export default function Footer() {
   return (
     <footer style={{ backgroundColor: "#0A1628" }} className="w-full">
       {/* Desktop: px-8 | Mobile: px-5 (по Figma 20px) */}
-      <div className="max-w-7xl mx-auto px-5 sm:px-8" style={{ paddingTop: "60px", paddingBottom: "40px" }}>
+      <div className="max-w-7xl mx-auto px-5 sm:px-8" style={{ paddingTop: "48px", paddingBottom: "32px" }}>
 
         {/* Main content */}
-        <div className="flex flex-col md:flex-row md:justify-between gap-10" style={{ marginBottom: "48px" }}>
+        <div className="flex flex-col md:flex-row md:justify-between gap-10" style={{ marginBottom: "40px" }}>
 
           {/* Left: Logo + description + badge */}
-          <div className="flex flex-col gap-4 w-full md:w-auto" style={{ maxWidth: "340px" }}>
+          <div className="flex flex-col gap-3 w-full md:w-auto" style={{ maxWidth: "300px" }}>
             <div className="flex items-center gap-3">
               <img src={logo} alt="Герб РК" className="w-10 h-10 flex-shrink-0" />
               <div>
@@ -58,16 +58,15 @@ export default function Footer() {
             </div>
 
             <p className="text-sm leading-relaxed" style={{ color: "#8899bb" }}>
-              Официальная платформа Республики Казахстан<br />
-              для сбора общественного мнения граждан.
+              Официальная платформа Республики Казахстан для сбора общественного мнения граждан.
             </p>
 
             <div
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs w-fit"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs w-fit"
               style={{ color: "#8899bb", border: "1px solid rgba(255,255,255,0.12)" }}
             >
               <ShieldIcon />
-              <span>Сертифицировано НЦТ РК</span>
+              <span>Сертифицировано НКЦ РК</span>
             </div>
           </div>
 

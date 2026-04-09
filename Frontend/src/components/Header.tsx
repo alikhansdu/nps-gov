@@ -184,11 +184,13 @@ export default function Header({
               <Link
                 key={item.href}
                 to={item.href}
-                className="px-4 py-2 text-sm rounded-lg transition-all duration-150"
+                className="px-4 py-2 text-sm transition-all duration-150"
                 style={{
-                  color: isActive ? "white" : "#8899bb",
-                  backgroundColor: isActive ? "rgba(255,255,255,0.08)" : "transparent",
+                  color: "white",
+                  backgroundColor: isActive ? "rgba(255,255,255,0.12)" : "transparent",
+                  border: isActive ? "1px solid rgba(255,255,255,0.35)" : "1px solid transparent",
                   fontWeight: isActive ? 500 : 400,
+                  borderRadius: 0,
                 }}
               >
                 {item.label}
@@ -268,11 +270,13 @@ export default function Header({
                 key={item.href}
                 to={item.href}
                 onClick={() => setMenuOpen(false)}
-                className="px-4 py-3 text-sm rounded-lg transition-all"
+                className="px-4 py-3 text-sm transition-all"
                 style={{
-                  color: isActive ? "white" : "#8899bb",
-                  backgroundColor: isActive ? "rgba(255,255,255,0.08)" : "transparent",
+                  color: "white",
+                  backgroundColor: isActive ? "rgba(255,255,255,0.12)" : "transparent",
+                  border: isActive ? "1px solid rgba(255,255,255,0.35)" : "1px solid transparent",
                   fontWeight: isActive ? 500 : 400,
+                  borderRadius: 0,
                 }}
               >
                 {item.label}

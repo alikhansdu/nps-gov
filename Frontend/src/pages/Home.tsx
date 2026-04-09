@@ -64,13 +64,13 @@ const ChevronRight = () => (
     <polyline points="9 18 15 12 9 6" />
   </svg>
 );
-const VoteIcon   = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>;
-const TrendIcon  = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>;
-const CheckSq    = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>;
-const StarIcon   = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
-const ShieldIcon = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>;
+const VoteIcon    = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><polyline points="9 12 11 14 15 10"/></svg>;
+const TrendIcon   = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>;
+const BarChartIcon= () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="12" width="4" height="8" rx="1"/><rect x="10" y="7" width="4" height="13" rx="1"/><rect x="17" y="3" width="4" height="17" rx="1"/></svg>;
+const MapPinIcon2 = () => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>;
+const ShieldIcon  = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>;
 
-const statIcons = [<VoteIcon />, <TrendIcon />, <CheckSq />, <StarIcon />];
+const statIcons = [<VoteIcon />, <TrendIcon />, <BarChartIcon />, <MapPinIcon2 />];
 
 // ─── Static content ───────────────────────────────────────
 const howItWorks = [
@@ -83,39 +83,47 @@ const howItWorks = [
 function Hero() {
   return (
     <section className="relative w-full overflow-hidden" style={{ backgroundColor: "#1E3A66" }}>
-      <div className="px-16 pt-20 pb-32 max-w-4xl">
+      <div className="px-8 md:px-16 pt-16 pb-36 max-w-4xl">
         <div
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs mb-6 border"
-          style={{ backgroundColor: "rgba(255,255,255,0.1)", color: "white", borderColor: "rgba(255,255,255,0.2)" }}
+          className="inline-flex items-center gap-2 mb-8"
+          style={{
+            backgroundColor: "#2d3f5e",
+            color: "#c8d8e8",
+            border: "1.5px solid #8aa0c0",
+            borderRadius: "20px",
+            padding: "8px 16px",
+            fontSize: "13px",
+            fontWeight: 500,
+          }}
         >
           <ShieldIcon /> Официальный государственный портал
         </div>
-        <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight mb-4">
+        <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight mb-5">
           Ваш голос формирует будущее<br />Казахстана
         </h1>
-        <p className="text-base mb-10" style={{ color: "rgba(255,255,255,0.75)" }}>
+        <p className="text-base mb-10" style={{ color: "rgba(255,255,255,0.7)" }}>
           Национальная цифровая система общественных опросов.<br />
           Участвуйте в принятии государственных решений.
         </p>
         <div className="flex flex-wrap gap-3">
           <button
             className="px-6 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2"
-            style={{ backgroundColor: "#F5C518", color: "#0A1628" }}
+            style={{ backgroundColor: "#EAB308", color: "#FAFAFA" }}
           >
             Принять участие →
           </button>
           <button
-            className="px-6 py-2.5 rounded-lg text-sm font-medium border hover:bg-white/10 transition-colors"
-            style={{ color: "white", borderColor: "rgba(255,255,255,0.4)", backgroundColor: "rgba(255,255,255,0.08)" }}
+            className="px-6 py-2.5 rounded-lg text-sm font-medium border transition-colors"
+            style={{ color: "rgba(255,255,255,0.85)", borderColor: "rgba(255,255,255,0.3)", backgroundColor: "rgba(255,255,255,0.08)" }}
           >
             Посмотреть результаты
           </button>
         </div>
       </div>
       <div className="absolute bottom-0 left-0 w-full" style={{ lineHeight: 0 }}>
-        <svg viewBox="0 0 1440 80" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"
-          style={{ display: "block", width: "100%", height: "80px" }}>
-          <path d="M0,40 C360,80 1080,0 1440,40 L1440,80 L0,80 Z" fill="#f9fafb" />
+        <svg viewBox="0 0 1440 92" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"
+          style={{ display: "block", width: "100%", height: "92px" }}>
+          <path d="M0,45 C360,90 1080,0 1440,45 L1440,92 L0,92 Z" fill="#ffffff" />
         </svg>
       </div>
     </section>
@@ -127,6 +135,7 @@ export default function Home() {
   const [activeSurveys, setActiveSurveys] = useState<ReturnType<typeof toActiveCard>[]>([]);
   const [closedSurveys, setClosedSurveys] = useState<ReturnType<typeof toClosedCard>[]>([]);
   const [stats, setStats]                 = useState<StatsFromAPI | null>(null);
+  const [regionsCount, setRegionsCount]   = useState<number | null>(null);
 
   useEffect(() => {
     if (FRONTEND_ONLY) {
@@ -141,6 +150,7 @@ export default function Home() {
         completed_surveys: completed.length,
         draft_surveys: mock.filter((s) => s.status === "draft").length,
       });
+      setRegionsCount(17);
       return;
     }
 
@@ -158,21 +168,45 @@ export default function Home() {
       .then((r) => r.ok ? r.json() : null)
       .then(setStats)
       .catch(() => setStats(null));
+
+    fetch("/api/v1/regions")
+      .then((r) => r.ok ? r.json() : [])
+      .then((data: { id: number }[]) => setRegionsCount(data.length))
+      .catch(() => setRegionsCount(null));
   }, []);
 
+  const participationRate = (() => {
+    if (!stats) return null;
+    const total = stats.active_surveys + stats.completed_surveys;
+    if (total === 0) return null;
+    return Math.round((stats.completed_surveys / total) * 1000) / 10;
+  })();
+
   const statsDisplay = [
-    { value: stats?.total_responses   ?? "—", label: "Всего ответов"       },
-    { value: stats?.active_surveys    ?? "—", label: "Активных опросов"    },
-    { value: stats?.completed_surveys ?? "—", label: "Завершённых опросов" },
-    { value: stats?.draft_surveys     ?? "—", label: "Черновиков"          },
+    {
+      value: stats ? stats.total_responses.toLocaleString("ru-RU") : "—",
+      label: "Всего голосов",
+    },
+    {
+      value: participationRate !== null ? `${participationRate}%` : "—",
+      label: "Уровень участия",
+    },
+    {
+      value: stats?.active_surveys ?? "—",
+      label: "Активных опросов",
+    },
+    {
+      value: regionsCount ?? "—",
+      label: "Регионов участвует",
+    },
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-white">
       <Header activeNav="/" />
       <Hero />
 
-      <main className="flex-1 w-full flex flex-col" style={{ paddingTop: "80px" }}>
+      <main className="flex-1 w-full flex flex-col" style={{ paddingTop: "60px", marginTop: "-2px" }}>
 
         {/* Active Surveys */}
         <section className="max-w-7xl mx-auto w-full px-8 mb-24">
@@ -184,7 +218,7 @@ export default function Home() {
             <Link
               to="/surveys"
               className="text-sm font-medium flex items-center gap-2 hover:underline"
-              style={{ color: "#00BCD4" }}
+              style={{ color: "#374151" }}
             >
               Все опросы <ChevronRight />
             </Link>
@@ -197,13 +231,11 @@ export default function Home() {
         </section>
 
         {/* Closed Surveys */}
-        <section className="w-full bg-gray-100 py-16">
+        <section className="w-full py-16" style={{ backgroundColor: "#F5F7FA" }}>
           <div className="max-w-7xl mx-auto w-full px-8">
-            <div className="flex items-center justify-between mb-5">
-              <div>
-                <h2 className="text-xl font-bold text-gray-900">Завершённые опросы</h2>
-                <p className="text-sm text-gray-500 mt-0.5">Результаты публичных голосований</p>
-              </div>
+            <div className="mb-5">
+              <h2 className="text-xl font-bold text-gray-900">Завершённые опросы</h2>
+              <p className="text-sm text-gray-500 mt-0.5">Результаты публичных голосований</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {closedSurveys.map((s) => (
@@ -214,58 +246,64 @@ export default function Home() {
         </section>
 
         {/* Statistics */}
-        <section className="max-w-7xl mx-auto w-full px-8 py-16">
-          <div className="text-center mb-6">
-            <h2 className="text-xl font-bold text-gray-900">Общая статистика</h2>
-          </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {statsDisplay.map((s, i) => (
-              <div
-                key={i}
-                className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col items-center text-center gap-3"
-              >
-                <span className="text-gray-400">{statIcons[i]}</span>
-                <div>
-                  <div className="text-2xl font-bold text-gray-900">{s.value}</div>
-                  <div className="text-sm text-gray-500 mt-0.5">{s.label}</div>
+        <section className="w-full py-16 bg-white">
+          <div className="max-w-7xl mx-auto w-full px-8">
+            {/* Title */}
+            <div className="text-center mb-8">
+              <h2 className="text-xl font-bold text-gray-900">Общая статистика</h2>
+            </div>
+
+            {/* 4 individual cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {statsDisplay.map((s, i) => (
+                <div
+                  key={i}
+                  className="bg-white border border-gray-200 rounded-xl flex flex-col items-center text-center py-7 px-4"
+                >
+                  <div
+                    className="flex items-center justify-center mb-4 rounded-2xl"
+                    style={{ width: "52px", height: "52px", backgroundColor: "#F0F1F3" }}
+                  >
+                    <span style={{ color: "#0d1117" }}>{statIcons[i]}</span>
+                  </div>
+                  <div className="mb-1" style={{ fontSize: "32px", fontWeight: 800, color: "#0d1117", lineHeight: 1.1 }}>{s.value}</div>
+                  <div style={{ fontSize: "13px", color: "#6B7280" }}>{s.label}</div>
                 </div>
-              </div>
-            ))}
-          </div>
-          <div className="flex justify-center mt-6">
-            <Link
-              to="/analytics"
-              className="px-6 py-2.5 text-sm font-medium rounded-lg transition-colors"
-              style={{ backgroundColor: "#0A1628", color: "white" }}
-            >
-              Аналитика →
-            </Link>
+              ))}
+            </div>
+
+            {/* Button */}
+            <div className="flex justify-center mt-8">
+              <Link
+                to="/analytics"
+                className="px-6 py-2.5 text-sm font-medium rounded-lg transition-colors"
+                style={{ backgroundColor: "#0A1628", color: "white" }}
+              >
+                Перейти в аналитику →
+              </Link>
+            </div>
           </div>
         </section>
 
         {/* How it works */}
-        <section className="w-full bg-gray-100 py-16">
+        <section className="w-full py-16" style={{ backgroundColor: "#F5F7FA" }}>
           <div className="max-w-7xl mx-auto w-full px-8">
-            <div className="text-center mb-6">
+            <div className="text-center mb-10">
               <h2 className="text-xl font-bold text-gray-900">Как это работает</h2>
               <p className="text-sm text-gray-500 mt-1">Простой и прозрачный процесс участия</p>
             </div>
-            <div className="w-full rounded-xl border border-gray-200 bg-white flex flex-col sm:flex-row">
-              {howItWorks.map((item, i) => (
-                <div
-                  key={item.step}
-                  className="flex items-start gap-4 flex-1 p-6"
-                  style={{ borderRight: i < howItWorks.length - 1 ? "1px solid #E4E4E7" : "none" }}
-                >
+            <div className="flex flex-col sm:flex-row gap-10 sm:gap-6">
+              {howItWorks.map((item) => (
+                <div key={item.step} className="flex items-start gap-4 flex-1">
                   <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0 mt-0.5"
+                    className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
                     style={{ backgroundColor: "#0A1628" }}
                   >
                     {item.step}
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold text-gray-900 mb-1">{item.title}</h3>
-                    <p className="text-xs text-gray-500 leading-relaxed">{item.desc}</p>
+                    <p className="text-sm text-gray-500 leading-relaxed">{item.desc}</p>
                   </div>
                 </div>
               ))}
