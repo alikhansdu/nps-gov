@@ -168,6 +168,7 @@ export default function AdminCreateSurvey() {
   const [regions, setRegions]     = useState<Region[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError]         = useState<string | null>(null);
+  const [savedAsDraft, setSavedAsDraft] = useState(false);
   const [questions, setQuestions] = useState<Question[]>([
     { id: 1, text: "", type: "Один вариант", options: ["Вариант 1", "Вариант 2"], required: false },
   ]);
@@ -268,6 +269,7 @@ export default function AdminCreateSurvey() {
             end_date: toApiDate(endDate),
           });
         }
+        if (status === "draft") { setSavedAsDraft(true); return; }
         navigate("/admin");
         return;
       }
@@ -367,6 +369,7 @@ export default function AdminCreateSurvey() {
         }
       }
 
+      if (status === "draft") { setSavedAsDraft(true); return; }
       navigate("/admin");
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Ошибка");
@@ -387,6 +390,44 @@ export default function AdminCreateSurvey() {
 
   return (
     <AdminLayout>
+
+      {/* ── Draft saved success screen ── */}
+      {savedAsDraft && (
+        <div className="flex-1 flex items-center justify-center p-6" style={{ minHeight: "calc(100vh - 64px)" }}>
+          <div className="bg-white border border-[#E4E4E7] rounded-2xl flex flex-col items-center text-center gap-4 w-full"
+            style={{ maxWidth: "420px", padding: "clamp(32px,6vw,56px) clamp(24px,5vw,48px)" }}>
+            {/* Icon */}
+            <div className="flex items-center justify-center rounded-xl"
+              style={{ width: "56px", height: "56px", backgroundColor: "rgba(22,163,74,0.10)" }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="9 12 11 14 15 10" />
+              </svg>
+            </div>
+            {/* Text */}
+            <div className="flex flex-col gap-2">
+              <h2 className="font-bold text-gray-900" style={{ fontSize: "clamp(18px,4vw,22px)" }}>
+                Черновик успешно сохранён!
+              </h2>
+              <p className="text-sm text-gray-500" style={{ lineHeight: 1.6 }}>
+                Ваш опрос сохранён в черновиках. Вы сможете<br className="hidden sm:block" /> отредактировать и опубликовать его позже.
+              </p>
+            </div>
+            {/* Button */}
+            <button
+              onClick={() => navigate("/admin/drafts")}
+              className="w-full text-sm font-semibold text-white rounded-lg transition-colors"
+              style={{ backgroundColor: "#0A1628", padding: "13px 24px" }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#162236")}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#0A1628")}
+            >
+              Перейти в список черновиков
+            </button>
+          </div>
+        </div>
+      )}
+
+      {!savedAsDraft && (
       <div className="flex flex-col" style={{ padding: "clamp(20px,4vw,40px) clamp(16px,4vw,48px)", gap: "24px" }}>
 
         <h1 className="text-2xl font-bold text-gray-900">{editId ? "Редактировать опрос" : "Создать опрос"}</h1>
@@ -615,6 +656,8 @@ export default function AdminCreateSurvey() {
         </div>
 
       </div>
+      )}
+
     </AdminLayout>
   );
 }

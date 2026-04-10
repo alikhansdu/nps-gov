@@ -134,7 +134,7 @@ function SurveyResultsView({
     <div className="min-h-screen flex flex-col bg-white">
       <Header activeNav="" />
       <main
-        className="flex-1 w-full flex flex-col gap-4 sm:gap-5 px-4 sm:px-6 max-w-3xl mx-auto"
+        className="flex-1 w-full flex flex-col gap-4 sm:gap-5 px-4 sm:px-10 lg:px-20"
         style={{ paddingTop: "28px", paddingBottom: "40px" }}
       >
         <Link
@@ -420,7 +420,7 @@ export default function SurveyDetail() {
     <div className="min-h-screen flex flex-col bg-white">
       <Header activeNav="" />
 
-      <main className={`flex-1 w-full flex flex-col px-4 sm:px-6 ${voted ? "items-center justify-center" : "max-w-3xl mx-auto gap-4 sm:gap-5"}`}
+      <main className={`flex-1 w-full flex flex-col px-4 sm:px-10 lg:px-20 ${voted ? "items-center justify-center" : "gap-4 sm:gap-5"}`}
         style={{ paddingTop: voted ? "0" : "28px", paddingBottom: "40px" }}>
 
         <Link to="/surveys" className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 transition-colors w-fit">

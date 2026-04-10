@@ -183,14 +183,12 @@ export default function AnalyticsFixed() {
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#F8FAFC" }}>
       <Header activeNav="/analytics" />
 
-      <div className="w-full border-b border-gray-200 bg-white" style={{ paddingTop: "28px", paddingBottom: "28px" }}>
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+      <div className="w-full border-b border-gray-200 bg-white px-4 sm:px-10 lg:px-20" style={{ paddingTop: "28px", paddingBottom: "28px" }}>
           <h1 className="text-2xl font-bold text-gray-900">Аналитика</h1>
           <p className="text-sm text-gray-500 mt-1">Публичная статистика голосований Республики Казахстан</p>
-        </div>
       </div>
 
-      <main className="flex-1 w-full flex flex-col px-4 sm:px-6 py-8 gap-6 max-w-5xl mx-auto w-full">
+      <main className="flex-1 w-full flex flex-col px-4 sm:px-10 lg:px-20 py-8 gap-6">
 
         {/* Stat Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
