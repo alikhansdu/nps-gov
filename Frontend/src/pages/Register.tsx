@@ -140,7 +140,7 @@ export default function Register() {
               <DatePicker
                   locale="ru"
                   selected={birthDate}
-                  onChange={(d) => { setBirthDate(d); setError(null); }}
+                  onChange={(d: Date | null) => { setBirthDate(d); setError(null); }}
                   dateFormat="dd.MM.yyyy"
                   placeholderText="ДД.ММ.ГГГГ"
                   showYearDropdown

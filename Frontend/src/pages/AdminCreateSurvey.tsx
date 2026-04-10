@@ -432,7 +432,7 @@ export default function AdminCreateSurvey() {
                 <DatePicker
                   locale="ru"
                   selected={startDate}
-                  onChange={(d) => setStartDate(d)}
+                  onChange={(d: Date | null) => setStartDate(d)}
                   dateFormat="dd.MM.yyyy"
                   placeholderText="дд.мм.гггг"
                   maxDate={new Date("2100-12-31")}
@@ -448,7 +448,7 @@ export default function AdminCreateSurvey() {
                 <DatePicker
                   locale="ru"
                   selected={endDate}
-                  onChange={(d) => { setEndDate(d); setError(null); }}
+                  onChange={(d: Date | null) => { setEndDate(d); setError(null); }}
                   dateFormat="dd.MM.yyyy"
                   placeholderText="дд.мм.гггг"
                   minDate={today}
