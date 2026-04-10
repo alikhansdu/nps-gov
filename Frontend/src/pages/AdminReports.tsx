@@ -107,7 +107,7 @@ export default function AdminAIReports() {
   return (
     <AdminLayout>
       <div style={{
-        padding: "40px 32px 40px 48px",
+        padding: "clamp(20px, 4vw, 40px) clamp(16px, 4vw, 48px)",
         gap: "12px",
         display: "flex",
         flexDirection: "column",
@@ -120,7 +120,7 @@ export default function AdminAIReports() {
 
         {/* AI Analysis */}
         <div style={{ ...cardStyle, minHeight: "420px", display: "flex", flexDirection: "column", gap: "20px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-sm font-semibold text-gray-900">AI-анализ данных</h2>
             <button
               onClick={generateInsights}
@@ -207,7 +207,7 @@ export default function AdminAIReports() {
         {/* Export */}
         <div style={{ ...cardStyle, minHeight: "192px" }}>
           <h2 className="text-sm font-semibold text-gray-900 mb-4">Экспорт отчётов</h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px" }}>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {exports.map((e, i) => (
               <button
                 key={i}

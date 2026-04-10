@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import Header from "../components/Header";
-import Footer from "../components/Footer";
 import { TOKEN_KEY } from "../api/client";
 import { FRONTEND_ONLY } from "../config/frontendMode";
 
@@ -465,7 +464,6 @@ export default function AdminPage() {
         </div>
       </main>
 
-      <Footer />
     </div>
   );
 }

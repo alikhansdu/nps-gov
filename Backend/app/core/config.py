@@ -9,7 +9,7 @@ class Settings(BaseSettings):
 
     JWT_SECRET: str = "change-me"
     JWT_ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 10080  # 7 дней
 
 
 settings = Settings()

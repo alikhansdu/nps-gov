@@ -11,6 +11,7 @@ import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminReports from "./pages/AdminReports";
 import AdminCreateSurvey from "./pages/AdminCreateSurvey";
 import AdminPage from "./pages/AdminPage";
+import AdminDrafts from "./pages/AdminDrafts";
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
       <Route path="/admin/reports" element={<AdminReports />} />
       <Route path="/admin/create" element={<AdminCreateSurvey />} />
       <Route path="/admin/users" element={<AdminPage />} />
+      <Route path="/admin/drafts" element={<AdminDrafts />} />
     </Routes>
   );
 }

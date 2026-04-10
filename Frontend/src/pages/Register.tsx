@@ -6,13 +6,15 @@ import { TOKEN_KEY } from "../api/client";
 import { FRONTEND_ONLY } from "../config/frontendMode";
 
 export default function Register() {
-  const [name, setName]           = useState("");
-  const [phone, setPhone]         = useState("");
-  const [password, setPassword]   = useState("");
-  const [confirm, setConfirm]     = useState("");
-  const [agreed, setAgreed]       = useState(true);
-  const [error, setError]         = useState<string | null>(null);
-  const [loading, setLoading]     = useState(false);
+  const [name, setName]         = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [gender, setGender]     = useState<"male" | "female" | "">("");
+  const [phone, setPhone]       = useState("");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm]   = useState("");
+  const [agreed, setAgreed]     = useState(true);
+  const [error, setError]       = useState<string | null>(null);
+  const [loading, setLoading]   = useState(false);
   const navigate = useNavigate();
 
   const formatPhone = (val: string) => {
@@ -23,6 +25,24 @@ export default function Register() {
     if (digits.length > 4) result += " " + digits.slice(4, 7);
     if (digits.length > 7) result += " " + digits.slice(7, 9);
     if (digits.length > 9) result += " " + digits.slice(9, 11);
+    return result;
+  };
+
+  // Convert DD.MM.YYYY → YYYY-MM-DD for API
+  const parseBirthDate = (val: string): string | null => {
+    const parts = val.split(".");
+    if (parts.length !== 3) return null;
+    const [dd, mm, yyyy] = parts;
+    if (dd.length !== 2 || mm.length !== 2 || yyyy.length !== 4) return null;
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
+  // Format input to DD.MM.YYYY as user types
+  const formatBirthDate = (val: string) => {
+    const digits = val.replace(/\D/g, "").slice(0, 8);
+    let result = digits.slice(0, 2);
+    if (digits.length > 2) result += "." + digits.slice(2, 4);
+    if (digits.length > 4) result += "." + digits.slice(4, 8);
     return result;
   };
 
@@ -50,10 +70,18 @@ export default function Register() {
         return;
       }
 
+      const birth_date = birthDate ? parseBirthDate(birthDate) : null;
+
       const res = await fetch("/api/v1/auth/user-register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, phone: phone.replace(/\D/g, ""), password }),
+        body: JSON.stringify({
+          name,
+          phone: phone.replace(/\D/g, ""),
+          password,
+          birth_date,
+          gender: gender || null,
+        }),
       });
 
       if (!res.ok) {
@@ -71,6 +99,12 @@ export default function Register() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const inputStyle = {
+    border: "1px solid #e5e7eb",
+    borderRadius: "8px",
+    padding: "10px 14px",
   };
 
   return (
@@ -103,8 +137,68 @@ export default function Register() {
                 value={name}
                 onChange={(e) => { setName(e.target.value); setError(null); }}
                 className="w-full text-sm text-gray-800 outline-none"
-                style={{ border: "1px solid #e5e7eb", borderRadius: "8px", padding: "10px 14px" }}
+                style={inputStyle}
               />
+            </div>
+
+            {/* Birth date */}
+            <div className="flex flex-col" style={{ gap: "6px" }}>
+              <label className="text-sm font-medium text-gray-700">Дата рождения</label>
+              <div className="relative">
+                <span
+                  className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                  style={{ color: "#9ca3af" }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                </span>
+                <input
+                  type="text"
+                  placeholder="ДД.ММ.ГГГГ"
+                  value={birthDate}
+                  onChange={(e) => { setBirthDate(formatBirthDate(e.target.value)); setError(null); }}
+                  className="w-full text-sm text-gray-800 outline-none"
+                  style={{ ...inputStyle, paddingLeft: "36px" }}
+                />
+              </div>
+            </div>
+
+            {/* Gender */}
+            <div className="flex flex-col" style={{ gap: "6px" }}>
+              <label className="text-sm font-medium text-gray-700">Пол</label>
+              <div className="flex gap-3">
+                {(["male", "female"] as const).map((val) => {
+                  const label = val === "male" ? "Мужской" : "Женский";
+                  const selected = gender === val;
+                  return (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => { setGender(val); setError(null); }}
+                      className="flex-1 flex items-center gap-2 text-sm text-gray-700 transition-all"
+                      style={{
+                        ...inputStyle,
+                        border: selected ? "1px solid #0A1628" : "1px solid #e5e7eb",
+                        backgroundColor: selected ? "rgba(10,22,40,0.04)" : "white",
+                      }}
+                    >
+                      <div
+                        className="w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center"
+                        style={{ borderColor: selected ? "#0A1628" : "#d1d5db" }}
+                      >
+                        {selected && (
+                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "#0A1628" }} />
+                        )}
+                      </div>
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Phone */}
@@ -116,7 +210,7 @@ export default function Register() {
                 value={phone}
                 onChange={(e) => { setPhone(formatPhone(e.target.value)); setError(null); }}
                 className="w-full text-sm text-gray-800 outline-none"
-                style={{ border: "1px solid #e5e7eb", borderRadius: "8px", padding: "10px 14px" }}
+                style={inputStyle}
               />
             </div>
 
@@ -129,7 +223,7 @@ export default function Register() {
                 value={password}
                 onChange={(e) => { setPassword(e.target.value); setError(null); }}
                 className="w-full text-sm text-gray-800 outline-none"
-                style={{ border: "1px solid #e5e7eb", borderRadius: "8px", padding: "10px 14px" }}
+                style={inputStyle}
               />
             </div>
 
@@ -142,7 +236,7 @@ export default function Register() {
                 value={confirm}
                 onChange={(e) => { setConfirm(e.target.value); setError(null); }}
                 className="w-full text-sm text-gray-800 outline-none"
-                style={{ border: "1px solid #e5e7eb", borderRadius: "8px", padding: "10px 14px" }}
+                style={inputStyle}
                 onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
               />
             </div>

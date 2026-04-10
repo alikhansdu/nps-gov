@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
@@ -21,6 +21,8 @@ class UserRegisterRequest(BaseModel):
     name: str = Field(min_length=1, max_length=255)
     phone: str = Field(min_length=10, max_length=20)
     password: str = Field(min_length=6, max_length=128)
+    birth_date: date | None = None
+    gender: Literal["male", "female"] | None = None
 
 
 class LoginRequest(BaseModel):

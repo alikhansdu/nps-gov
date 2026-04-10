@@ -67,3 +67,30 @@ class SurveyUpdateRequest(BaseModel):
 
 class SurveyStatusUpdateRequest(BaseModel):
     status: SurveyStatusLiteral
+
+
+# ── Results schemas ───────────────────────────────────────────────────────────
+
+class OptionResultResponse(BaseModel):
+    id: int
+    option_text: str
+    order_index: int
+    votes_count: int
+    percentage: float
+
+
+class QuestionResultResponse(BaseModel):
+    id: int
+    question_text: str
+    question_type: QuestionTypeLiteral
+    order_index: int
+    options: list[OptionResultResponse] = []
+    total_votes: int
+
+
+class SurveyResultsResponse(BaseModel):
+    survey_id: int
+    title: str
+    status: SurveyStatusLiteral
+    total_responses: int
+    questions: list[QuestionResultResponse] = []

@@ -5,10 +5,33 @@ import { TOKEN_KEY } from "../api/client";
 import { FRONTEND_ONLY } from "../config/frontendMode";
 import { getMockSurveys } from "../mocks/surveyStore";
 
-const BarIcon      = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>;
-const EditIcon     = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
-const CheckIcon    = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>;
-const UsersIcon    = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
+const BarIcon   = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+    <rect x="3"  y="12" width="4" height="9" rx="1" />
+    <rect x="10" y="6"  width="4" height="15" rx="1" />
+    <rect x="17" y="9"  width="4" height="12" rx="1" />
+  </svg>
+);
+const EditIcon  = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <polyline points="14 2 14 8 20 8" />
+    <line x1="12" y1="18" x2="12" y2="12" />
+    <line x1="9" y1="15" x2="15" y2="15" />
+  </svg>
+);
+const CheckIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="9 12 11 14 15 10" />
+  </svg>
+);
+const UsersIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
+);
 const ClockIcon    = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
 const PlusIcon     = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
 const ChevronRight = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>;
@@ -169,7 +192,12 @@ export default function AdminOverview() {
         <div className="grid grid-cols-4 gap-4">
           {stats.map((s, i) => (
             <div key={i} className="bg-white border border-[#E4E4E7] rounded-xl p-5 flex flex-col gap-3">
-              <span className="text-gray-400">{s.icon}</span>
+              <span
+                className="flex items-center justify-center rounded-lg text-gray-500"
+                style={{ width: "40px", height: "40px", backgroundColor: "#F1F2F4" }}
+              >
+                {s.icon}
+              </span>
               <div className="text-2xl font-bold text-gray-900">{s.value}</div>
               <div className="text-sm text-gray-500">{s.label}</div>
             </div>
@@ -184,9 +212,9 @@ export default function AdminOverview() {
               <PlusIcon /> Создать
             </Link>
           </div>
-          <div className="flex flex-col divide-y divide-gray-100">
+          <div className="flex flex-col gap-2 p-3">
             {mySurveys.length === 0 && (
-              <p className="px-5 py-4 text-sm text-gray-400">Нет опросов</p>
+              <p className="px-3 py-3 text-sm text-gray-400">Нет опросов</p>
             )}
             {mySurveys.map((s) => {
               const st = STATUS_MAP[s.status];
@@ -194,20 +222,25 @@ export default function AdminOverview() {
                 ? new Date(s.end_date).toLocaleDateString("ru-RU", { day: "numeric", month: "short", year: "numeric" })
                 : null;
               return (
-                <div key={s.id} className="flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="w-1 h-8 rounded-full flex-shrink-0" style={{ backgroundColor: st.color }} />
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{s.title}</p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-xs font-medium px-1.5 py-0.5 rounded" style={{ backgroundColor: st.bg, color: st.color }}>
-                          {st.label}
-                        </span>
-                        <span className="text-xs text-gray-400">{s.total_responses.toLocaleString("ru-RU")} голосов</span>
-                      </div>
+                <div
+                  key={s.id}
+                  className="flex items-center justify-between rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                  style={{
+                    backgroundColor: "#F8F9FA",
+                    borderLeft: `3px solid ${st.color}`,
+                    padding: "10px 14px",
+                  }}
+                >
+                  <div className="flex flex-col gap-0.5">
+                    <p className="text-sm font-semibold text-gray-900">{s.title}</p>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-medium" style={{ color: st.color }}>
+                        • {st.label}
+                      </span>
+                      <span className="text-xs text-gray-400">{s.total_responses.toLocaleString("ru-RU")} голосов</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 text-gray-400">
+                  <div className="flex items-center gap-2 text-gray-400 flex-shrink-0">
                     <span className="flex items-center gap-1 text-xs text-gray-400">
                       <ClockIcon /> {deadline ?? "—"}
                     </span>

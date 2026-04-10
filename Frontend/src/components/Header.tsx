@@ -91,47 +91,16 @@ function UserDropdown() {
         <div
           className="absolute right-0 mt-2 z-50 rounded-xl overflow-hidden"
           style={{
-            minWidth: "180px",
+            minWidth: "140px",
             backgroundColor: "#0f1e36",
             border: "1px solid rgba(255,255,255,0.10)",
             boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
           }}
         >
-          {user.name && (
-            <div
-              className="px-4 py-3 text-sm font-medium border-b"
-              style={{ color: "#ffffff", borderColor: "rgba(255,255,255,0.08)" }}
-            >
-              {user.name}
-            </div>
-          )}
-
-          <Link
-            to="/profile"
-            onClick={() => setOpen(false)}
-            className="flex items-center gap-2 px-4 py-3 text-sm transition-colors"
-            style={{ color: "#8899bb" }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "#fff"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#8899bb"; }}
-          >
-            Мой профиль
-          </Link>
-
-          <Link
-            to="/my-surveys"
-            onClick={() => setOpen(false)}
-            className="flex items-center gap-2 px-4 py-3 text-sm transition-colors"
-            style={{ color: "#8899bb" }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "#fff"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#8899bb"; }}
-          >
-            Мои опросы
-          </Link>
-
           <button
             onClick={() => { setOpen(false); logout(); navigate("/"); }}
-            className="w-full text-left flex items-center gap-2 px-4 py-3 text-sm border-t transition-colors"
-            style={{ color: "#f87171", borderColor: "rgba(255,255,255,0.08)" }}
+            className="w-full text-center px-4 py-3 text-sm font-medium transition-colors"
+            style={{ color: "#f87171" }}
             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(248,113,113,0.08)")}
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
           >

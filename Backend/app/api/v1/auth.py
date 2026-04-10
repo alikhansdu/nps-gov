@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import date
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
@@ -69,11 +71,20 @@ async def user_register(payload: UserRegisterRequest, session: AsyncSession = De
     if existing.scalar_one_or_none() is not None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Номер телефона уже зарегистрирован")
 
+    age: int | None = None
+    if payload.birth_date is not None:
+        today = date.today()
+        age = today.year - payload.birth_date.year - (
+            (today.month, today.day) < (payload.birth_date.month, payload.birth_date.day)
+        )
+
     user = User(
         name=payload.name,
         phone=payload.phone,
         hashed_password=hash_password(payload.password),
         role=UserRole.citizen,
+        age=age,
+        gender=payload.gender,
     )
     session.add(user)
     await session.commit()

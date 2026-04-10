@@ -1,4 +1,4 @@
-version: "3.9"
+# version: "3.9"  ← удалено (obsolete)
 services:
   migrate:
     build: ./backend
@@ -42,8 +42,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+        # ports убраны ← боты брутфорсили через публичный 5432
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
