@@ -83,9 +83,9 @@ const howItWorks = [
 function Hero() {
   return (
     <section className="relative w-full overflow-hidden" style={{ backgroundColor: "#1E3A66" }}>
-      <div className="px-8 md:px-16 pt-16 pb-36 max-w-4xl">
+      <div className="px-5 sm:px-8 md:px-16 pt-12 pb-36 max-w-4xl">
         <div
-          className="inline-flex items-center gap-2 mb-8"
+          className="inline-flex items-center gap-2 mb-6"
           style={{
             backgroundColor: "#2d3f5e",
             color: "#c8d8e8",
@@ -98,26 +98,28 @@ function Hero() {
         >
           <ShieldIcon /> Официальный государственный портал
         </div>
-        <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight mb-5">
-          Ваш голос формирует будущее<br />Казахстана
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight mb-5">
+          Ваш голос формирует будущее Казахстана
         </h1>
-        <p className="text-base mb-10" style={{ color: "rgba(255,255,255,0.7)" }}>
-          Национальная цифровая система общественных опросов.<br />
+        <p className="text-sm sm:text-base mb-8" style={{ color: "rgba(255,255,255,0.7)" }}>
+          Национальная цифровая система общественных опросов.
           Участвуйте в принятии государственных решений.
         </p>
-        <div className="flex flex-wrap gap-3">
-          <button
-            className="px-6 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2"
-            style={{ backgroundColor: "#EAB308", color: "#FAFAFA" }}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Link
+            to="/surveys"
+            className="flex items-center justify-center gap-2 rounded-lg text-sm font-semibold"
+            style={{ backgroundColor: "#EAB308", color: "#FAFAFA", padding: "12px 24px" }}
           >
             Принять участие →
-          </button>
-          <button
-            className="px-6 py-2.5 rounded-lg text-sm font-medium border transition-colors"
-            style={{ color: "rgba(255,255,255,0.85)", borderColor: "rgba(255,255,255,0.3)", backgroundColor: "rgba(255,255,255,0.08)" }}
+          </Link>
+          <Link
+            to="/surveys?tab=completed"
+            className="flex items-center justify-center rounded-lg text-sm font-medium border transition-colors"
+            style={{ color: "rgba(255,255,255,0.85)", borderColor: "rgba(255,255,255,0.3)", backgroundColor: "rgba(255,255,255,0.08)", padding: "12px 24px" }}
           >
             Посмотреть результаты
-          </button>
+          </Link>
         </div>
       </div>
       <div className="absolute bottom-0 left-0 w-full" style={{ lineHeight: 0 }}>
@@ -209,21 +211,21 @@ export default function Home() {
       <main className="flex-1 w-full flex flex-col" style={{ paddingTop: "60px", marginTop: "-2px" }}>
 
         {/* Active Surveys */}
-        <section className="max-w-7xl mx-auto w-full px-8 mb-24">
+        <section className="max-w-7xl mx-auto w-full px-5 sm:px-8 mb-16 sm:mb-24">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Активные опросы</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900">Активные опросы</h2>
               <p className="text-sm text-gray-500 mt-0.5">Примите участие и выразите своё мнение</p>
             </div>
             <Link
               to="/surveys"
-              className="text-sm font-medium flex items-center gap-2 hover:underline"
+              className="text-sm font-medium flex items-center gap-2 hover:underline whitespace-nowrap"
               style={{ color: "#374151" }}
             >
               Все опросы <ChevronRight />
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {activeSurveys.map((s) => (
               <ActiveSurveyCard key={s.id} {...s} />
             ))}
@@ -231,13 +233,13 @@ export default function Home() {
         </section>
 
         {/* Closed Surveys */}
-        <section className="w-full py-16" style={{ backgroundColor: "#F5F7FA" }}>
-          <div className="max-w-7xl mx-auto w-full px-8">
+        <section className="w-full py-12 sm:py-16" style={{ backgroundColor: "#F5F7FA" }}>
+          <div className="max-w-7xl mx-auto w-full px-5 sm:px-8">
             <div className="mb-5">
-              <h2 className="text-xl font-bold text-gray-900">Завершённые опросы</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900">Завершённые опросы</h2>
               <p className="text-sm text-gray-500 mt-0.5">Результаты публичных голосований</p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
               {closedSurveys.map((s) => (
                 <ClosedSurveyCard key={s.id} {...s} />
               ))}
@@ -246,34 +248,34 @@ export default function Home() {
         </section>
 
         {/* Statistics */}
-        <section className="w-full py-16 bg-white">
-          <div className="max-w-7xl mx-auto w-full px-8">
+        <section className="w-full py-12 sm:py-16 bg-white">
+          <div className="max-w-7xl mx-auto w-full px-5 sm:px-8">
             {/* Title */}
-            <div className="text-center mb-8">
-              <h2 className="text-xl font-bold text-gray-900">Общая статистика</h2>
+            <div className="text-center mb-6 sm:mb-8">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900">Общая статистика</h2>
             </div>
 
             {/* 4 individual cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               {statsDisplay.map((s, i) => (
                 <div
                   key={i}
-                  className="bg-white border border-gray-200 rounded-xl flex flex-col items-center text-center py-7 px-4"
+                  className="bg-white border border-gray-200 rounded-xl flex flex-col items-center text-center py-5 sm:py-7 px-3 sm:px-4"
                 >
                   <div
-                    className="flex items-center justify-center mb-4 rounded-2xl"
-                    style={{ width: "52px", height: "52px", backgroundColor: "#F0F1F3" }}
+                    className="flex items-center justify-center mb-3 sm:mb-4 rounded-2xl"
+                    style={{ width: "44px", height: "44px", backgroundColor: "#F0F1F3" }}
                   >
                     <span style={{ color: "#0d1117" }}>{statIcons[i]}</span>
                   </div>
-                  <div className="mb-1" style={{ fontSize: "32px", fontWeight: 800, color: "#0d1117", lineHeight: 1.1 }}>{s.value}</div>
-                  <div style={{ fontSize: "13px", color: "#6B7280" }}>{s.label}</div>
+                  <div className="mb-1" style={{ fontSize: "clamp(22px, 5vw, 32px)", fontWeight: 800, color: "#0d1117", lineHeight: 1.1 }}>{s.value}</div>
+                  <div style={{ fontSize: "12px", color: "#6B7280" }}>{s.label}</div>
                 </div>
               ))}
             </div>
 
             {/* Button */}
-            <div className="flex justify-center mt-8">
+            <div className="flex justify-center mt-6 sm:mt-8">
               <Link
                 to="/analytics"
                 className="px-6 py-2.5 text-sm font-medium rounded-lg transition-colors"
@@ -286,13 +288,13 @@ export default function Home() {
         </section>
 
         {/* How it works */}
-        <section className="w-full py-16" style={{ backgroundColor: "#F5F7FA" }}>
-          <div className="max-w-7xl mx-auto w-full px-8">
-            <div className="text-center mb-10">
-              <h2 className="text-xl font-bold text-gray-900">Как это работает</h2>
+        <section className="w-full py-12 sm:py-16" style={{ backgroundColor: "#F5F7FA" }}>
+          <div className="max-w-7xl mx-auto w-full px-5 sm:px-8">
+            <div className="text-center mb-8 sm:mb-10">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900">Как это работает</h2>
               <p className="text-sm text-gray-500 mt-1">Простой и прозрачный процесс участия</p>
             </div>
-            <div className="flex flex-col sm:flex-row gap-10 sm:gap-6">
+            <div className="flex flex-col sm:flex-row gap-8 sm:gap-6">
               {howItWorks.map((item) => (
                 <div key={item.step} className="flex items-start gap-4 flex-1">
                   <div

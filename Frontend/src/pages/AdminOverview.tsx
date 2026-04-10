@@ -175,25 +175,28 @@ export default function AdminOverview() {
     ? surveys.filter((s) => s.created_by === currentUserId)
     : surveys;
 
+  const fmtNum = (n: number | undefined) =>
+    n != null ? n.toLocaleString("ru-RU") : "—";
+
   const stats = [
-    { value: String(overview?.active_surveys    ?? "—"), label: "Активных опросов", icon: <BarIcon /> },
-    { value: String(overview?.draft_surveys     ?? "—"), label: "Черновики",         icon: <EditIcon /> },
-    { value: String(overview?.completed_surveys ?? "—"), label: "Завершённые",        icon: <CheckIcon /> },
-    { value: String(overview?.total_responses   ?? "—"), label: "Всего голосов",      icon: <UsersIcon /> },
+    { value: fmtNum(overview?.active_surveys),    label: "Активных опросов", icon: <BarIcon /> },
+    { value: fmtNum(overview?.draft_surveys),     label: "Черновики",         icon: <EditIcon /> },
+    { value: fmtNum(overview?.completed_surveys), label: "Завершённые",        icon: <CheckIcon /> },
+    { value: fmtNum(overview?.total_responses),   label: "Всего голосов",      icon: <UsersIcon /> },
   ];
 
   return (
     <AdminLayout>
-      <div style={{ padding: "40px 32px 40px 48px", display: "flex", flexDirection: "column", gap: "20px" }}>
+      <div className="flex flex-col gap-5" style={{ padding: "clamp(20px,4vw,40px) clamp(16px,4vw,48px)" }}>
 
         <h1 className="text-2xl font-bold text-gray-900">Обзор</h1>
 
         {/* Stats */}
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((s, i) => (
             <div key={i} className="bg-white border border-[#E4E4E7] rounded-xl p-5 flex flex-col gap-3">
               <span
-                className="flex items-center justify-center rounded-lg text-gray-500"
+                className="flex items-center justify-center rounded-lg text-gray-500 flex-shrink-0"
                 style={{ width: "40px", height: "40px", backgroundColor: "#F1F2F4" }}
               >
                 {s.icon}
@@ -224,16 +227,16 @@ export default function AdminOverview() {
               return (
                 <div
                   key={s.id}
-                  className="flex items-center justify-between rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                  className="flex items-center justify-between rounded-lg hover:bg-gray-100 transition-colors cursor-pointer gap-2"
                   style={{
                     backgroundColor: "#F8F9FA",
                     borderLeft: `3px solid ${st.color}`,
                     padding: "10px 14px",
                   }}
                 >
-                  <div className="flex flex-col gap-0.5">
-                    <p className="text-sm font-semibold text-gray-900">{s.title}</p>
-                    <div className="flex items-center gap-1.5">
+                  <div className="flex flex-col gap-0.5 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 truncate">{s.title}</p>
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="text-xs font-medium" style={{ color: st.color }}>
                         • {st.label}
                       </span>
@@ -241,7 +244,7 @@ export default function AdminOverview() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 text-gray-400 flex-shrink-0">
-                    <span className="flex items-center gap-1 text-xs text-gray-400">
+                    <span className="hidden sm:flex items-center gap-1 text-xs text-gray-400">
                       <ClockIcon /> {deadline ?? "—"}
                     </span>
                     <ChevronRight />
@@ -253,7 +256,7 @@ export default function AdminOverview() {
         </div>
 
         {/* Activity chart */}
-        <div className="bg-white border border-[#E4E4E7] rounded-xl" style={{ padding: "20px 24px", display: "flex", flexDirection: "column" }}>
+        <div className="bg-white border border-[#E4E4E7] rounded-xl p-5 flex flex-col">
           <h2 className="text-sm font-semibold text-gray-900 mb-1">Активность за 7 дней</h2>
           <p className="text-xs text-gray-400 mb-3">Ежедневная активность голосований</p>
           <AreaChart data={overview?.activity_last_7_days ?? []} />

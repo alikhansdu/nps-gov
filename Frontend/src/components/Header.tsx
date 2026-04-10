@@ -146,21 +146,21 @@ export default function Header({
           </div>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-2">
+        <nav className="hidden md:flex items-center gap-1">
           {navItems.map((item) => {
             const isActive = activeNav === item.href;
             return (
               <Link
                 key={item.href}
                 to={item.href}
-                className="px-4 py-2 text-sm transition-all duration-150"
+                className="px-4 py-2 text-sm font-medium transition-all duration-150 rounded-lg"
                 style={{
-                  color: "white",
-                  backgroundColor: isActive ? "rgba(255,255,255,0.12)" : "transparent",
-                  border: isActive ? "1px solid rgba(255,255,255,0.35)" : "1px solid transparent",
-                  fontWeight: isActive ? 500 : 400,
-                  borderRadius: 0,
+                  color: isActive ? "#0A1628" : "rgba(255,255,255,0.80)",
+                  backgroundColor: isActive ? "#ffffff" : "transparent",
+                  fontWeight: isActive ? 600 : 400,
                 }}
+                onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.08)"; }}
+                onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.backgroundColor = "transparent"; }}
               >
                 {item.label}
               </Link>
@@ -239,13 +239,11 @@ export default function Header({
                 key={item.href}
                 to={item.href}
                 onClick={() => setMenuOpen(false)}
-                className="px-4 py-3 text-sm transition-all"
+                className="px-4 py-3 text-sm rounded-lg transition-all"
                 style={{
-                  color: "white",
-                  backgroundColor: isActive ? "rgba(255,255,255,0.12)" : "transparent",
-                  border: isActive ? "1px solid rgba(255,255,255,0.35)" : "1px solid transparent",
-                  fontWeight: isActive ? 500 : 400,
-                  borderRadius: 0,
+                  color: isActive ? "#0A1628" : "rgba(255,255,255,0.80)",
+                  backgroundColor: isActive ? "#ffffff" : "transparent",
+                  fontWeight: isActive ? 600 : 400,
                 }}
               >
                 {item.label}

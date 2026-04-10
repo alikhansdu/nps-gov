@@ -74,6 +74,7 @@ def upgrade():
             id SERIAL PRIMARY KEY,
             title VARCHAR(255) NOT NULL,
             description TEXT,
+            category VARCHAR(100),
             created_by INTEGER NOT NULL REFERENCES users(id),
             status survey_status NOT NULL DEFAULT 'draft',
             region_id INTEGER REFERENCES regions(id),
@@ -119,6 +120,7 @@ def upgrade():
     op.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS age INTEGER;")
     op.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS gender VARCHAR(10);")
     op.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS organization VARCHAR(255);")
+    op.execute("ALTER TABLE surveys ADD COLUMN IF NOT EXISTS category VARCHAR(100);")
 
     # --- SEED DATA (only if regions is empty) ---
     count = conn.execute(sa.text("SELECT COUNT(*) FROM regions")).scalar()
@@ -155,6 +157,7 @@ def upgrade():
         sa.column("id", sa.Integer),
         sa.column("title", sa.String),
         sa.column("description", sa.Text),
+        sa.column("category", sa.String),
         sa.column("created_by", sa.Integer),
         sa.column("status", survey_status),
         sa.column("region_id", sa.Integer),
@@ -245,12 +248,12 @@ def upgrade():
     op.bulk_insert(
         surveys_t,
         [
-            {"id": 1, "title": "Качество государственных услуг",   "description": "Оценка удовлетворённости граждан государственными услугами.", "created_by": 1, "status": "active",    "region_id": 2,  "end_date": None},
-            {"id": 2, "title": "Состояние дорог и инфраструктуры", "description": "Опрос о качестве дорог и городской инфраструктуры.",          "created_by": 1, "status": "completed", "region_id": 1,  "end_date": None},
-            {"id": 3, "title": "Экология и чистота города",        "description": "Оценка экологической ситуации в городе.",                      "created_by": 2, "status": "active",    "region_id": 3,  "end_date": None},
-            {"id": 4, "title": "Качество медицинских услуг",       "description": "Опрос об уровне медицинского обслуживания.",                    "created_by": 2, "status": "completed", "region_id": 4,  "end_date": None},
-            {"id": 5, "title": "Образование и школы",              "description": "Удовлетворённость качеством образования.",                      "created_by": 3, "status": "active",    "region_id": 5,  "end_date": None},
-            {"id": 6, "title": "Безопасность в районе",            "description": "Оценка уровня безопасности и работы полиции.",                  "created_by": 3, "status": "completed", "region_id": 8,  "end_date": None},
+            {"id": 1, "title": "Качество государственных услуг",   "description": "Оценка удовлетворённости граждан государственными услугами.", "category": "Цифровизация",       "created_by": 1, "status": "active",    "region_id": 2,  "end_date": None},
+            {"id": 2, "title": "Состояние дорог и инфраструктуры", "description": "Опрос о качестве дорог и городской инфраструктуры.",          "category": "Инфраструктура",     "created_by": 1, "status": "completed", "region_id": 1,  "end_date": None},
+            {"id": 3, "title": "Экология и чистота города",        "description": "Оценка экологической ситуации в городе.",                      "category": "Экология",           "created_by": 2, "status": "active",    "region_id": 3,  "end_date": None},
+            {"id": 4, "title": "Качество медицинских услуг",       "description": "Опрос об уровне медицинского обслуживания.",                    "category": "Здравоохранение",    "created_by": 2, "status": "completed", "region_id": 4,  "end_date": None},
+            {"id": 5, "title": "Образование и школы",              "description": "Удовлетворённость качеством образования.",                      "category": "Образование",        "created_by": 3, "status": "active",    "region_id": 5,  "end_date": None},
+            {"id": 6, "title": "Безопасность в районе",            "description": "Оценка уровня безопасности и работы полиции.",                  "category": "Социальная политика","created_by": 3, "status": "completed", "region_id": 8,  "end_date": None},
         ],
     )
 
@@ -426,6 +429,7 @@ def downgrade():
     op.execute("DROP TABLE IF EXISTS responses CASCADE;")
     op.execute("DROP TABLE IF EXISTS options CASCADE;")
     op.execute("DROP TABLE IF EXISTS questions CASCADE;")
+    op.execute("ALTER TABLE surveys DROP COLUMN IF EXISTS category;")
     op.execute("DROP TABLE IF EXISTS surveys CASCADE;")
     op.execute("DROP TABLE IF EXISTS users CASCADE;")
     op.execute("DROP TABLE IF EXISTS regions CASCADE;")

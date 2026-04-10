@@ -1,9 +1,14 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import DatePicker, { registerLocale } from "react-datepicker";
+import { ru } from "date-fns/locale/ru";
+import "react-datepicker/dist/react-datepicker.css";
 import AdminLayout from "../layouts/AdminLayout";
 import { TOKEN_KEY } from "../api/client";
 import { FRONTEND_ONLY } from "../config/frontendMode";
 import { addMockSurvey } from "../mocks/surveyStore";
+
+registerLocale("ru", ru);
 
 const PlusIcon    = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
 const CalIcon     = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>;
@@ -33,6 +38,12 @@ const TYPE_MAP: Record<string, "single" | "multiple" | "text"> = {
   "Множественный выбор": "multiple",
   "Текстовый ответ":     "text",
   "Шкала":               "single",
+};
+
+const REVERSE_TYPE_MAP: Record<string, string> = {
+  "single":   "Один вариант",
+  "multiple": "Множественный выбор",
+  "text":     "Текстовый ответ",
 };
 
 // ─── Custom Select with dropdown ─────────────────────────
@@ -142,14 +153,16 @@ function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) =>
 
 export default function AdminCreateSurvey() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const token    = localStorage.getItem(TOKEN_KEY);
 
+  const [editId, setEditId]       = useState<number | null>(null);
   const [title, setTitle]         = useState("");
   const [description, setDesc]    = useState("");
   const [category, setCategory]   = useState("Инфраструктура");
   const [regionId, setRegionId]   = useState<string>("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate]     = useState("");
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate]     = useState<Date | null>(null);
   const [anonymous, setAnonymous] = useState(true);
   const [comments, setComments]   = useState(false);
   const [regions, setRegions]     = useState<Region[]>([]);
@@ -159,6 +172,10 @@ export default function AdminCreateSurvey() {
     { id: 1, text: "", type: "Один вариант", options: ["Вариант 1", "Вариант 2"], required: false },
   ]);
 
+  // IDs of questions originally loaded from backend (used for deletion on edit save)
+  const originalQuestionIdsRef = useRef<number[]>([]);
+
+  // Load regions
   useEffect(() => {
     if (FRONTEND_ONLY) {
       setRegions([
@@ -172,6 +189,49 @@ export default function AdminCreateSurvey() {
       .then((r) => r.ok ? r.json() : [])
       .then(setRegions)
       .catch(() => {});
+  }, []);
+
+  // Load survey data if editing
+  useEffect(() => {
+    const idParam = searchParams.get("edit");
+    if (!idParam) return;
+    const numId = parseInt(idParam, 10);
+    if (isNaN(numId)) return;
+    setEditId(numId);
+
+    if (FRONTEND_ONLY) return;
+
+    fetch(`/api/v1/surveys/${numId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.ok ? r.json() : Promise.reject(new Error("Не удалось загрузить опрос")))
+      .then((data) => {
+        setTitle(data.title ?? "");
+        setDesc(data.description ?? "");
+        setRegionId(data.region_id ? String(data.region_id) : "");
+        setEndDate(data.end_date ? new Date(data.end_date) : null);
+
+        if (data.questions?.length) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const sorted = [...data.questions].sort((a: any, b: any) => a.order_index - b.order_index);
+          originalQuestionIdsRef.current = sorted.map((q: { id: number }) => q.id);
+          setQuestions(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            sorted.map((q: any) => ({
+              id: q.id,
+              text: q.question_text,
+              type: REVERSE_TYPE_MAP[q.question_type] ?? "Один вариант",
+              options: [...q.options]
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                .sort((a: any, b: any) => a.order_index - b.order_index)
+                .map((o: { option_text: string }) => o.option_text),
+              required: false,
+            }))
+          );
+        }
+      })
+      .catch((e: unknown) => setError(e instanceof Error ? e.message : "Не удалось загрузить опрос"));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const addQuestion = () =>
@@ -193,46 +253,91 @@ export default function AdminCreateSurvey() {
 
   const handleSubmit = async (status: "active" | "draft") => {
     if (!title.trim()) { setError("Введите название опроса"); return; }
+    if (!endDate) { setError("Выберите дату окончания опроса"); return; }
     setSubmitting(true);
     setError(null);
 
     try {
       if (FRONTEND_ONLY) {
-        addMockSurvey({
-          title: title.trim(),
-          description: description.trim() || null,
-          status,
-          region_id: regionId ? parseInt(regionId, 10) : null,
-          end_date: endDate || null,
-        });
+        if (!editId) {
+          addMockSurvey({
+            title: title.trim(),
+            description: description.trim() || null,
+            status,
+            region_id: regionId ? parseInt(regionId, 10) : null,
+            end_date: toApiDate(endDate),
+          });
+        }
         navigate("/admin");
         return;
       }
 
-      const surveyRes = await fetch("/api/v1/surveys", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          title:       title.trim(),
-          description: description.trim() || null,
-          status,
-          region_id:   regionId ? parseInt(regionId) : null,
-          end_date:    endDate || null,
-        }),
-      });
+      let surveyId: number;
 
-      if (!surveyRes.ok) {
-        const data = await surveyRes.json().catch(() => ({}));
-        throw new Error(data?.detail ?? "Ошибка создания опроса");
+      if (editId) {
+        // ── Edit mode: update survey fields ──────────────────────────────
+        const updateRes = await fetch(`/api/v1/surveys/${editId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            title:       title.trim(),
+            description: description.trim() || null,
+            category:    category || null,
+            region_id:   regionId ? parseInt(regionId) : null,
+            end_date:    endDate || null,
+          }),
+        });
+        if (!updateRes.ok) {
+          const data = await updateRes.json().catch(() => ({}));
+          throw new Error(data?.detail ?? "Ошибка обновления опроса");
+        }
+
+        // Update status separately
+        await fetch(`/api/v1/surveys/${editId}/status`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ status }),
+        });
+
+        // Delete all original questions (cascade removes options too)
+        for (const qId of originalQuestionIdsRef.current) {
+          await fetch(`/api/v1/questions/${qId}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        }
+        originalQuestionIdsRef.current = [];
+
+        surveyId = editId;
+      } else {
+        // ── Create mode ───────────────────────────────────────────────────
+        const surveyRes = await fetch("/api/v1/surveys", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            title:       title.trim(),
+            description: description.trim() || null,
+            category:    category || null,
+            status,
+            region_id:   regionId ? parseInt(regionId) : null,
+            end_date:    endDate || null,
+          }),
+        });
+        if (!surveyRes.ok) {
+          const data = await surveyRes.json().catch(() => ({}));
+          throw new Error(data?.detail ?? "Ошибка создания опроса");
+        }
+        const survey = await surveyRes.json();
+        surveyId = survey.id;
       }
-      const survey = await surveyRes.json();
 
+      // ── Create questions (both create and edit modes) ─────────────────
       for (let i = 0; i < questions.length; i++) {
         const q = questions[i];
         if (!q.text.trim()) continue;
         const questionType = TYPE_MAP[q.type] ?? "single";
 
-        const qRes = await fetch(`/api/v1/surveys/${survey.id}/questions`, {
+        const qRes = await fetch(`/api/v1/surveys/${surveyId}/questions`, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({ question_text: q.text, question_type: questionType, order_index: i }),
@@ -270,6 +375,13 @@ export default function AdminCreateSurvey() {
     }
   };
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Format Date → "YYYY-MM-DD" for API
+  const toApiDate = (d: Date | null) =>
+    d ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}` : null;
+
   const inputCls = "w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-gray-400 transition-colors text-gray-700 placeholder-gray-400 bg-white";
   const labelCls = "text-sm font-medium text-gray-700";
 
@@ -277,7 +389,7 @@ export default function AdminCreateSurvey() {
     <AdminLayout>
       <div className="flex flex-col" style={{ padding: "clamp(20px,4vw,40px) clamp(16px,4vw,48px)", gap: "24px" }}>
 
-        <h1 className="text-2xl font-bold text-gray-900">Создать опрос</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{editId ? "Редактировать опрос" : "Создать опрос"}</h1>
 
         {/* ── Информация ── */}
         <div className="bg-white border border-[#E4E4E7] rounded-xl p-6 flex flex-col gap-5">
@@ -315,20 +427,35 @@ export default function AdminCreateSurvey() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
               <label className={labelCls}>Дата начала</label>
-              <div className="flex items-center gap-2 px-3 py-2.5 border border-gray-200 rounded-lg bg-white">
+              <div className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg bg-white">
                 <span className="text-gray-400 flex-shrink-0"><CalIcon /></span>
-                <input type="date" placeholder="дд.мм.гггг"
-                  className="flex-1 text-sm outline-none text-gray-700 placeholder-gray-400 bg-transparent"
-                  value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                <DatePicker
+                  locale="ru"
+                  selected={startDate}
+                  onChange={(d) => setStartDate(d)}
+                  dateFormat="dd.MM.yyyy"
+                  placeholderText="дд.мм.гггг"
+                  maxDate={new Date("2100-12-31")}
+                  className="flex-1 w-full text-sm outline-none text-gray-700 placeholder-gray-400 bg-transparent"
+                  wrapperClassName="flex-1"
+                />
               </div>
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className={labelCls}>Дата окончания</label>
-              <div className="flex items-center gap-2 px-3 py-2.5 border border-gray-200 rounded-lg bg-white">
+              <label className={labelCls}>Дата окончания *</label>
+              <div className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg bg-white">
                 <span className="text-gray-400 flex-shrink-0"><CalIcon /></span>
-                <input type="date" placeholder="дд.мм.гггг"
-                  className="flex-1 text-sm outline-none text-gray-700 placeholder-gray-400 bg-transparent"
-                  value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                <DatePicker
+                  locale="ru"
+                  selected={endDate}
+                  onChange={(d) => { setEndDate(d); setError(null); }}
+                  dateFormat="dd.MM.yyyy"
+                  placeholderText="дд.мм.гггг"
+                  minDate={today}
+                  maxDate={new Date("2100-12-31")}
+                  className="flex-1 w-full text-sm outline-none text-gray-700 placeholder-gray-400 bg-transparent"
+                  wrapperClassName="flex-1"
+                />
               </div>
             </div>
           </div>

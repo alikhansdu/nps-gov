@@ -10,6 +10,7 @@ type SurveyFromAPI = {
   id: number;
   title: string;
   description: string | null;
+  category: string | null;
   status: "draft" | "active" | "completed";
   region_id: number | null;
   region_name: string | null;
@@ -29,6 +30,7 @@ function toActiveCard(s: SurveyFromAPI) {
     id:            s.id,
     title:         s.title,
     description:   s.description ?? "",
+    category:      s.category ?? null,
     region:        s.region_name ?? "Вся РК",
     initiator:     s.creator_name,
     deadline:      formatDeadline(s.end_date),
@@ -41,6 +43,7 @@ function toClosedCard(s: SurveyFromAPI) {
   return {
     id:           s.id,
     title:        s.title,
+    category:     s.category ?? null,
     deadline:     formatDeadline(s.end_date),
     participants: s.total_responses.toLocaleString("ru-RU"),
   };
@@ -64,8 +67,8 @@ export default function Surveys() {
   useEffect(() => {
     if (FRONTEND_ONLY) {
       const mock = getMockSurveys();
-      setActive(mock.filter((s) => s.status === "active").map((s) => toActiveCard({ ...s, region_name: null, creator_name: `Автор #${s.created_by}` })));
-      setClosed(mock.filter((s) => s.status === "completed").map((s) => toClosedCard({ ...s, region_name: null, creator_name: "" })));
+      setActive(mock.filter((s) => s.status === "active").map((s) => toActiveCard({ ...s, category: null, region_name: null, creator_name: `Автор #${s.created_by}` })));
+      setClosed(mock.filter((s) => s.status === "completed").map((s) => toClosedCard({ ...s, category: null, region_name: null, creator_name: "" })));
       return;
     }
 
@@ -81,10 +84,12 @@ export default function Surveys() {
   }, []);
 
   const filterActive = activeSurveys.filter((s) =>
-    s.title.toLowerCase().includes(search.toLowerCase())
+    s.title.toLowerCase().includes(search.toLowerCase()) &&
+    (category === "Все" || s.category === category)
   );
   const filterClosed = closedSurveys.filter((s) =>
-    s.title.toLowerCase().includes(search.toLowerCase())
+    s.title.toLowerCase().includes(search.toLowerCase()) &&
+    (category === "Все" || s.category === category)
   );
 
   const showActive = status === "Все" || status === "Активные";
@@ -95,43 +100,41 @@ export default function Surveys() {
       <Header activeNav="/surveys" />
 
       <div
-        className="w-full border-b border-gray-200"
+        className="w-full border-b border-gray-200 px-5 sm:px-10 lg:px-20"
         style={{ paddingTop: "28px", paddingBottom: "28px", backgroundColor: "#F8FAFC" }}
       >
-        <div style={{ paddingLeft: "80px", paddingRight: "80px" }}>
-          <h1 className="text-2xl font-bold text-gray-900">Опросы</h1>
-          <p className="text-sm text-gray-500 mt-1">Все публичные опросы Республики Казахстан</p>
-        </div>
+        <h1 className="text-2xl font-bold text-gray-900">Опросы</h1>
+        <p className="text-sm text-gray-500 mt-1">Все публичные опросы Республики Казахстан</p>
       </div>
 
       <main
-        className="flex-1 w-full flex flex-col"
-        style={{ paddingLeft: "80px", paddingRight: "80px", paddingTop: "40px", paddingBottom: "80px", gap: "40px", backgroundColor: "#ffffff" }}
+        className="flex-1 w-full flex flex-col px-5 sm:px-10 lg:px-20"
+        style={{ paddingTop: "28px", paddingBottom: "60px", gap: "24px", backgroundColor: "#ffffff" }}
       >
-        {/* Search + Status filter */}
-        <div className="flex items-center gap-3 w-full">
-          <div className="flex-1 flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-4 py-2.5">
-            <span className="text-gray-400"><SearchIcon /></span>
-            <input
-              type="text"
-              placeholder="Поиск опросов..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 text-sm text-gray-700 outline-none bg-transparent placeholder-gray-400"
-            />
-          </div>
-          <div className="flex items-center bg-white border border-gray-200 rounded-lg overflow-hidden">
-            {(["Все", "Активные", "Завершённые"] as const).map((s) => (
-              <button
-                key={s}
-                onClick={() => setStatus(s)}
-                className="px-4 py-2.5 text-sm font-medium transition-colors"
-                style={{ backgroundColor: status === s ? "#0A1628" : "transparent", color: status === s ? "white" : "#6b7280" }}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
+        {/* Search */}
+        <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-4 py-2.5 w-full">
+          <span className="text-gray-400"><SearchIcon /></span>
+          <input
+            type="text"
+            placeholder="Поиск опросов..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="flex-1 text-sm text-gray-700 outline-none bg-transparent placeholder-gray-400"
+          />
+        </div>
+
+        {/* Status filter */}
+        <div className="flex items-center bg-white border border-gray-200 rounded-lg overflow-hidden w-full sm:w-auto self-start">
+          {(["Все", "Активные", "Завершённые"] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => setStatus(s)}
+              className="flex-1 sm:flex-none px-4 py-2.5 text-sm font-medium transition-colors"
+              style={{ backgroundColor: status === s ? "#0A1628" : "transparent", color: status === s ? "white" : "#6b7280" }}
+            >
+              {s}
+            </button>
+          ))}
         </div>
 
         {/* Category pills */}
@@ -155,13 +158,13 @@ export default function Surveys() {
         {/* Active Surveys */}
         {showActive && filterActive.length > 0 && (
           <section>
-            <div className="flex items-center gap-2 mb-5">
+            <div className="flex items-center gap-2 mb-4 sm:mb-5">
               <h2 className="text-lg font-bold text-gray-900">Активные опросы</h2>
               <span className="text-xs font-semibold px-2 py-0.5 rounded-full text-white" style={{ backgroundColor: "#0A1628" }}>
                 {filterActive.length}
               </span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
               {filterActive.map((s) => <ActiveSurveyCard key={s.id} {...s} />)}
             </div>
           </section>
@@ -169,14 +172,14 @@ export default function Surveys() {
 
         {/* Closed Surveys */}
         {showClosed && filterClosed.length > 0 && (
-          <section style={{ marginTop: "40px" }}>
-            <div className="flex items-center gap-2 mb-5">
+          <section className="mt-4 sm:mt-6">
+            <div className="flex items-center gap-2 mb-4 sm:mb-5">
               <h2 className="text-lg font-bold text-gray-900">Завершённые опросы</h2>
               <span className="text-xs font-semibold px-2 py-0.5 rounded-full text-white" style={{ backgroundColor: "#0A1628" }}>
                 {filterClosed.length}
               </span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
               {filterClosed.map((s) => <ClosedSurveyCard key={s.id} {...s} />)}
             </div>
           </section>

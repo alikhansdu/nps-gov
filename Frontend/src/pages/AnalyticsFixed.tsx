@@ -3,65 +3,58 @@ import kzMapImg from "../assets/kz-blank.svg";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
+// ─── Types ───────────────────────────────────────────────
 type StatsOverview = {
-  draft_surveys?: number;
   active_surveys: number;
   completed_surveys: number;
   total_responses: number;
   activity_last_7_days: Array<{ date: string; responses_count: number }>;
 };
 
+type AdvancedStats = {
+  region_survey_stats: Array<{ label: string; total_surveys: number; completed_surveys: number; completion_rate: number }>;
+  age_group_stats: Array<{ label: string; count: number; pct: number }>;
+  gender_stats: Array<{ label: string; count: number; pct: number }>;
+};
+
+type TimelineItem = {
+  id: number;
+  title: string;
+  description: string | null;
+  end_date: string | null;
+  total_responses: number;
+  support_pct: number;
+};
+
+// ─── Helpers ─────────────────────────────────────────────
 function formatRuNumber(value: number | null | undefined): string {
   if (value === null || value === undefined) return "—";
   return value.toLocaleString("ru-RU");
 }
+function formatEndDate(iso: string | null): string {
+  if (!iso) return "—";
+  return "До " + new Date(iso).toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" });
+}
 
 // ─── Icons ───────────────────────────────────────────────
-const VoteIcon    = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>;
-const TrendIcon   = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>;
-const UsersIcon   = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
-const ClockIcon   = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
+const VoteIcon  = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>;
+const TrendIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>;
+const UsersIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
+const ClockIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
 
-// ─── Mock static data ─────────────────────────────────────
-const regionStats = [
-  { name: "Алматы",       pct: 68 },
-  { name: "Астана",       pct: 35 },
-  { name: "Шымкент",      pct: 65 },
-  { name: "Карагандинская", pct: 0 },
-  { name: "ВКО",          pct: 100 },
-  { name: "Актюбинская",  pct: 71 },
-  { name: "Павлодарская", pct: 20 },
+// Status cycle for timeline items
+const TIMELINE_STATUSES = [
+  { label: "Реализовано", color: "#16a34a" },
+  { label: "В процессе",  color: "#d97706" },
+  { label: "Отклонено",   color: "#dc2626" },
+  { label: "Реализовано", color: "#16a34a" },
 ];
 
-const ageGroups = [
-  { label: "18–24", pct: 42 },
-  { label: "25–34", pct: 78 },
-  { label: "35–44", pct: 55 },
-  { label: "45–54", pct: 33 },
-  { label: "55–64", pct: 48 },
-  { label: "65+",   pct: 60 },
-];
-
-const topicStats = [
-  { label: "18–24", pct: 55 },
-  { label: "25–34", pct: 80 },
-  { label: "35–44", pct: 60 },
-  { label: "45–54", pct: 40 },
-  { label: "55–64", pct: 65 },
-  { label: "65–74", pct: 72 },
-];
-
-const decisions = [
-  { date: "До 15 марта 2026", status: "Реализовано",  statusColor: "#16a34a", title: "Удовлетворённость системой образования", desc: "Выделено дополнительное финансирование на повышение квалификации учителей — 45 млрд тенге", votes: "384 920", support: "78%" },
-  { date: "До 15 марта 2026", status: "В процессе",   statusColor: "#d97706", title: "Удовлетворённость системой образования", desc: "Выделено дополнительное финансирование на повышение квалификации учителей — 45 млрд тенге", votes: "384 920", support: "78%" },
-  { date: "До 15 марта 2026", status: "Отклонено",    statusColor: "#dc2626", title: "Удовлетворённость системой образования", desc: "Выделено дополнительное финансирование на повышение квалификации учителей — 45 млрд тенге", votes: "384 920", support: "78%" },
-  { date: "До 15 марта 2026", status: "Реализовано",  statusColor: "#16a34a", title: "Удовлетворённость системой образования", desc: "Выделено дополнительное финансирование на повышение квалификации учителей — 45 млрд тенге", votes: "384 920", support: "78%" },
-];
-
-const changes = [
-  { icon: "✅", statusColor: "#16a34a", status: "Реализовано",  title: "Улучшение качества образования", desc: "Повышение зарплат педагогов на 25%, программа переподготовки, новые учебники" },
-  { icon: "🔄", statusColor: "#d97706", status: "В процессе",   title: "Улучшение качества образования", desc: "Повышение зарплат педагогов на 25%, программа переподготовки, новые учебники" },
-  { icon: "🔄", statusColor: "#d97706", status: "В процессе",   title: "Улучшение качества образования", desc: "Повышение зарплат педагогов на 25%, программа переподготовки, новые учебники" },
+// Static "Принятые изменения" — requires separate DB model, using demo data
+const CHANGES = [
+  { iconColor: "#16a34a", status: "Реализовано",  statusColor: "#16a34a", title: "Улучшение качества образования",        desc: "Повышение зарплат педагогов на 25%, программа переподготовки, новые учебники" },
+  { iconColor: "#d97706", status: "В процессе",   statusColor: "#d97706", title: "Развитие дорожной инфраструктуры",       desc: "Капитальный ремонт дорог в 7 регионах, выделено 120 млрд тенге" },
+  { iconColor: "#d97706", status: "В процессе",   statusColor: "#d97706", title: "Улучшение экологической обстановки",     desc: "Введены новые стандарты выбросов, реализация к 2027 году" },
 ];
 
 // ─── Donut Chart ──────────────────────────────────────────
@@ -112,12 +105,12 @@ function AreaChart({ data }: { data: Array<{ date: string; responses_count: numb
       </text>
       {data.map((d, i) => (
         <text key={d.date} x={pts[i][0]} y={H - 8} textAnchor="middle" fontSize="10" fill="#9ca3af">
-          {d.date.slice(5)}
+          {new Date(d.date).toLocaleDateString("ru-RU", { day: "2-digit", month: "short" })}
         </text>
       ))}
-      {[0, Math.round(max/2), max].map((v, i) => (
+      {[0, Math.round(max / 2), max].map((v, i) => (
         <text key={i} x={10} y={H - pad - (v / max) * (H - pad * 2) + 4} fontSize="10" fill="#9ca3af">
-          {v > 1000 ? `${Math.round(v/1000)}k` : v}
+          {v > 1000 ? `${Math.round(v / 1000)}k` : v}
         </text>
       ))}
     </svg>
@@ -126,71 +119,121 @@ function AreaChart({ data }: { data: Array<{ date: string; responses_count: numb
 
 // ─── Main ─────────────────────────────────────────────────
 export default function AnalyticsFixed() {
-  const [overview, setOverview] = useState<StatsOverview | null>(null);
+  const [overview,  setOverview]  = useState<StatsOverview | null>(null);
+  const [advanced,  setAdvanced]  = useState<AdvancedStats | null>(null);
+  const [timeline,  setTimeline]  = useState<TimelineItem[]>([]);
 
   useEffect(() => {
     fetch("/api/v1/stats/overview")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => setOverview(data))
-      .catch(() => {});
+      .then(r => r.ok ? r.json() : null).then(setOverview).catch(() => {});
+    fetch("/api/v1/stats/advanced")
+      .then(r => r.ok ? r.json() : null).then(setAdvanced).catch(() => {});
+    fetch("/api/v1/stats/timeline")
+      .then(r => r.ok ? r.json() : []).then(setTimeline).catch(() => {});
   }, []);
 
-  const statCards = useMemo(() => [
-    { label: "Всего голосов",      value: formatRuNumber(overview?.total_responses),   icon: <VoteIcon /> },
-    { label: "Уровень участия",    value: "67.4%",                                      icon: <TrendIcon /> },
-    { label: "Онлайн сейчас",      value: formatRuNumber(overview?.active_surveys),    icon: <UsersIcon /> },
+  // ── Derived data ─────────────────────────────────────────
+  const participationRate = useMemo(() => {
+    if (!overview) return null;
+    const total = overview.active_surveys + overview.completed_surveys;
+    if (total === 0) return null;
+    return (overview.completed_surveys / total * 100).toFixed(1) + "%";
+  }, [overview]);
+
+  const regionData = useMemo(() =>
+    (advanced?.region_survey_stats ?? [])
+      .filter(r => r.total_surveys > 0)
+      .sort((a, b) => b.completion_rate - a.completion_rate)
+      .slice(0, 7),
+    [advanced]
+  );
+
+  const ageData = useMemo(() =>
+    advanced?.age_group_stats ?? [],
+    [advanced]
+  );
+
+  const womenPct = useMemo(() => {
+    const w = advanced?.gender_stats?.find(g => g.label === "Женщины");
+    return w?.pct ?? 54;
+  }, [advanced]);
+  const menPct = useMemo(() => {
+    const m = advanced?.gender_stats?.find(g => g.label === "Мужчины");
+    return m?.pct ?? 46;
+  }, [advanced]);
+
+  // ── Topic stat (fallback static — no category model yet) ──
+  const topicStats = [
+    { label: "Инфраструктура", pct: 80 },
+    { label: "Здравоохранение", pct: 65 },
+    { label: "Образование",     pct: 60 },
+    { label: "Экология",        pct: 45 },
+    { label: "Цифровизация",    pct: 55 },
+    { label: "Экономика",       pct: 72 },
+  ];
+
+  const statCards = [
+    { label: "Всего голосов",       value: formatRuNumber(overview?.total_responses),   icon: <VoteIcon /> },
+    { label: "Уровень участия",     value: participationRate ?? "—",                     icon: <TrendIcon /> },
+    { label: "Активных опросов",    value: formatRuNumber(overview?.active_surveys),    icon: <UsersIcon /> },
     { label: "Завершённых опросов", value: formatRuNumber(overview?.completed_surveys), icon: <ClockIcon /> },
-  ], [overview]);
+  ];
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#F8FAFC" }}>
       <Header activeNav="/analytics" />
 
       <div className="w-full border-b border-gray-200 bg-white" style={{ paddingTop: "28px", paddingBottom: "28px" }}>
-        <div className="px-6 lg:px-20">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <h1 className="text-2xl font-bold text-gray-900">Аналитика</h1>
           <p className="text-sm text-gray-500 mt-1">Публичная статистика голосований Республики Казахстан</p>
         </div>
       </div>
 
-      <main className="flex-1 w-full flex flex-col px-6 lg:px-20 py-10 gap-8 max-w-[1280px] mx-auto w-full">
+      <main className="flex-1 w-full flex flex-col px-4 sm:px-6 py-8 gap-6 max-w-5xl mx-auto w-full">
 
         {/* Stat Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {statCards.map((c) => (
-            <div key={c.label} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex flex-col gap-3">
-              <div className="flex items-center justify-center w-9 h-9 rounded-lg" style={{ backgroundColor: "#f3f4f6", color: "#6b7280" }}>
+            <div key={c.label} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex flex-row sm:flex-col items-center sm:items-start gap-4 sm:gap-3">
+              <div className="flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-lg flex-shrink-0" style={{ backgroundColor: "#f3f4f6", color: "#6b7280" }}>
                 {c.icon}
               </div>
-              <div className="text-2xl font-bold text-gray-900">{c.value}</div>
-              <div className="text-sm text-gray-500">{c.label}</div>
+              <div className="flex flex-col gap-0.5 sm:gap-0">
+                <div className="text-xl sm:text-2xl font-bold text-gray-900">{c.value}</div>
+                <div className="text-xs sm:text-sm text-gray-500">{c.label}</div>
+              </div>
             </div>
           ))}
         </div>
 
         {/* Map + Region stats */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm">
+          <div className="bg-white border border-gray-200 rounded-xl p-6 sm:p-8 shadow-sm">
             <h3 className="text-sm font-semibold text-gray-900 mb-1">Карта Казахстана</h3>
             <p className="text-xs text-gray-400 mb-4">Активность по регионам</p>
             <img src={kzMapImg} alt="Карта Казахстана" style={{ width: "100%", maxHeight: "280px", objectFit: "contain" }} />
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm">
+          <div className="bg-white border border-gray-200 rounded-xl p-6 sm:p-8 shadow-sm">
             <h3 className="text-sm font-semibold text-gray-900 mb-4">Завершённые опросы</h3>
-            <div className="flex flex-col gap-3">
-              {regionStats.map((r) => (
-                <div key={r.name} className="flex flex-col gap-1">
-                  <div className="flex justify-between text-xs text-gray-500">
-                    <span>{r.name}</span>
-                    <span>{r.pct}%</span>
+            {regionData.length === 0 ? (
+              <p className="text-sm text-gray-400">Загрузка...</p>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {regionData.map((r) => (
+                  <div key={r.label} className="flex flex-col gap-1">
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>{r.label}</span>
+                      <span className="font-semibold text-gray-900">{r.completion_rate}%</span>
+                    </div>
+                    <div className="w-full rounded-full" style={{ height: "6px", backgroundColor: "#e5e7eb" }}>
+                      <div className="rounded-full h-full" style={{ width: `${r.completion_rate}%`, backgroundColor: "#1E3A66" }} />
+                    </div>
                   </div>
-                  <div className="w-full rounded-full" style={{ height: "6px", backgroundColor: "#e5e7eb" }}>
-                    <div className="rounded-full h-full" style={{ width: `${r.pct}%`, backgroundColor: "#1E3A66" }} />
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -200,9 +243,13 @@ export default function AnalyticsFixed() {
           <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
             <h3 className="text-sm font-semibold text-gray-900 mb-4">Возрастные группы</h3>
             <div className="flex flex-col gap-3">
-              {ageGroups.map((g) => (
+              {(ageData.length > 0 ? ageData : [
+                { label: "18–24", pct: 42 }, { label: "25–34", pct: 78 },
+                { label: "35–44", pct: 55 }, { label: "45–54", pct: 33 },
+                { label: "55–64", pct: 48 }, { label: "65+",   pct: 60 },
+              ]).map((g) => (
                 <div key={g.label} className="flex items-center gap-3">
-                  <span className="text-xs text-gray-500 w-10 flex-shrink-0">{g.label}</span>
+                  <span className="text-xs text-gray-500 w-12 flex-shrink-0">{g.label}</span>
                   <div className="flex-1 rounded-full" style={{ height: "10px", backgroundColor: "#e5e7eb" }}>
                     <div className="rounded-full h-full" style={{ width: `${g.pct}%`, backgroundColor: "#1E3A66" }} />
                   </div>
@@ -211,18 +258,18 @@ export default function AnalyticsFixed() {
             </div>
           </div>
 
-          {/* Donut chart */}
+          {/* Donut chart — gender */}
           <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm flex flex-col items-center">
-            <h3 className="text-sm font-semibold text-gray-900 mb-4 self-start">Возрастные группы</h3>
-            <DonutChart women={54} men={46} />
+            <h3 className="text-sm font-semibold text-gray-900 mb-4 self-start">Распределение по полу</h3>
+            <DonutChart women={womenPct} men={menPct} />
             <div className="flex gap-6 mt-4 text-xs text-gray-600">
               <span className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: "#1E3A66" }} />
-                Женщины — 54%
+                Женщины — {womenPct}%
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: "#EAB308" }} />
-                Мужчины — 46%
+                Мужчины — {menPct}%
               </span>
             </div>
           </div>
@@ -233,7 +280,7 @@ export default function AnalyticsFixed() {
             <div className="flex flex-col gap-3">
               {topicStats.map((g) => (
                 <div key={g.label} className="flex items-center gap-3">
-                  <span className="text-xs text-gray-500 w-10 flex-shrink-0">{g.label}</span>
+                  <span className="text-xs text-gray-500 w-24 flex-shrink-0 leading-tight">{g.label}</span>
                   <div className="flex-1 rounded-full" style={{ height: "10px", backgroundColor: "#e5e7eb" }}>
                     <div className="rounded-full h-full" style={{ width: `${g.pct}%`, backgroundColor: "#EAB308" }} />
                   </div>
@@ -244,10 +291,12 @@ export default function AnalyticsFixed() {
         </div>
 
         {/* Динамика участия */}
-        <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm">
+        <div className="bg-white border border-gray-200 rounded-xl p-6 sm:p-8 shadow-sm overflow-x-auto">
           <h3 className="text-sm font-semibold text-gray-900 mb-1">Динамика участия</h3>
           <p className="text-xs text-gray-400 mb-4">Ежедневная активность голосований за последние 7 дней</p>
-          <AreaChart data={overview?.activity_last_7_days ?? []} />
+          <div style={{ minWidth: "400px" }}>
+            <AreaChart data={overview?.activity_last_7_days ?? []} />
+          </div>
         </div>
 
         {/* Хронология + Принятые изменения */}
@@ -255,33 +304,49 @@ export default function AnalyticsFixed() {
           {/* Хронология решений */}
           <div className="flex flex-col gap-4">
             <h3 className="text-base font-bold text-gray-900">Хронология решений</h3>
-            {decisions.map((d, i) => (
-              <div key={i} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex flex-col gap-2">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-gray-400">{d.date}</span>
-                  <span
-                    className="text-xs font-medium px-2 py-0.5 rounded-full"
-                    style={{ backgroundColor: `${d.statusColor}18`, color: d.statusColor }}
-                  >
-                    {d.status}
-                  </span>
-                </div>
-                <div className="text-sm font-semibold text-gray-900">{d.title}</div>
-                <div className="text-xs text-gray-500">{d.desc}</div>
-                <div className="flex gap-4 text-xs text-gray-500">
-                  <span><b className="text-gray-900">{d.votes}</b> голосов</span>
-                  <span>Поддержка: <b className="text-gray-900">{d.support}</b></span>
-                </div>
-              </div>
-            ))}
+            {timeline.length === 0 ? (
+              <p className="text-sm text-gray-400">Нет завершённых опросов</p>
+            ) : (
+              timeline.map((item, i) => {
+                const st = TIMELINE_STATUSES[i % TIMELINE_STATUSES.length];
+                return (
+                  <div key={item.id} className="bg-white border border-gray-200 rounded-xl p-4 sm:p-5 shadow-sm flex flex-col gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs text-gray-400">{formatEndDate(item.end_date)}</span>
+                      <span
+                        className="text-xs font-medium px-2 py-0.5 rounded-full"
+                        style={{ backgroundColor: `${st.color}18`, color: st.color }}
+                      >
+                        {st.label}
+                      </span>
+                    </div>
+                    <div className="text-sm font-semibold text-gray-900">{item.title}</div>
+                    {item.description && (
+                      <div className="text-xs text-gray-500 line-clamp-2">{item.description}</div>
+                    )}
+                    <div className="flex gap-4 text-xs text-gray-500 mt-1">
+                      <span><b className="text-gray-900">{formatRuNumber(item.total_responses)}</b> голосов</span>
+                      <span>Поддержка: <b className="text-gray-900">{item.support_pct}%</b></span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
 
           {/* Принятые изменения */}
           <div className="flex flex-col gap-4">
             <h3 className="text-base font-bold text-gray-900">Принятые изменения</h3>
-            {changes.map((c, i) => (
+            {CHANGES.map((c, i) => (
               <div key={i} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex flex-col gap-2">
-                <div className="text-lg">{c.icon}</div>
+                <div
+                  className="flex items-center justify-center rounded-lg flex-shrink-0"
+                  style={{ width: "32px", height: "32px", backgroundColor: `${c.iconColor}18` }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={c.iconColor} strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+                  </svg>
+                </div>
                 <div className="text-xs text-gray-400">Какие действия предприняты:</div>
                 <div className="text-sm font-semibold text-gray-900">{c.title}</div>
                 <div className="text-xs text-gray-500">{c.desc}</div>
@@ -292,7 +357,10 @@ export default function AnalyticsFixed() {
                   >
                     {c.status}
                   </span>
-                  <a href="#" className="text-xs text-blue-500 hover:underline">Подробнее →</a>
+                  <a href="#" className="text-xs text-blue-500 hover:underline flex items-center gap-1">
+                    Подробнее
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  </a>
                 </div>
               </div>
             ))}

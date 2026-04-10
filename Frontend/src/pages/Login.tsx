@@ -67,12 +67,12 @@ export default function Login() {
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#f3f4f6" }}>
       <Header activeNav="" />
 
-      <main className="flex-1 flex items-center justify-center" style={{ padding: "80px 24px" }}>
+      <main className="flex-1 flex items-center justify-center px-4 sm:px-6 py-10 sm:py-20">
         <div
           className="bg-white rounded-2xl w-full flex flex-col items-center"
           style={{
             maxWidth: "420px",
-            padding: "40px 40px",
+            padding: "clamp(24px, 6vw, 40px)",
             boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
             gap: "24px",
           }}

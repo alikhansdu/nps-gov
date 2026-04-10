@@ -5,9 +5,10 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends
 from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.core.database import get_session
-from app.models.models import Region, Response, Survey, SurveyStatus, User
+from app.models.models import Option, Question, Region, Response, Survey, SurveyStatus, User
 from app.schemas.stats import (
     AdvancedStatsResponse,
     AgeGroupItem,
@@ -16,6 +17,7 @@ from app.schemas.stats import (
     RegionStatsItem,
     RegionSurveyItem,
     StatsOverviewResponse,
+    SurveyTimelineItem,
 )
 
 router = APIRouter(prefix="/stats", tags=["stats"])
@@ -180,3 +182,65 @@ async def stats_advanced(session: AsyncSession = Depends(get_session)) -> Advanc
         comment_rate=comment_rate,
         repeat_participants_rate=repeat_rate,
     )
+
+
+@router.get("/timeline", response_model=list[SurveyTimelineItem])
+async def stats_timeline(session: AsyncSession = Depends(get_session)) -> list[SurveyTimelineItem]:
+    """Returns completed surveys with total responses and support % for the analytics timeline."""
+    surveys_res = await session.execute(
+        select(Survey)
+        .options(
+            selectinload(Survey.questions).selectinload(Question.options)
+        )
+        .where(Survey.status == SurveyStatus.completed)
+        .order_by(Survey.created_at.desc())
+    )
+    surveys = list(surveys_res.scalars().all())
+
+    result: list[SurveyTimelineItem] = []
+    for survey in surveys:
+        total_res = await session.execute(
+            select(func.count(Response.id)).where(Response.survey_id == survey.id)
+        )
+        total = int(total_res.scalar_one() or 0)
+
+        # Support % = votes for first 2 options of the first single-choice question
+        support_pct = 0.0
+        single_qs = sorted(
+            [q for q in survey.questions if q.question_type.value == "single"],
+            key=lambda q: q.order_index,
+        )
+        if single_qs:
+            q = single_qs[0]
+            q_total_res = await session.execute(
+                select(func.count(Response.id)).where(
+                    Response.question_id == q.id,
+                    Response.option_id.is_not(None),
+                )
+            )
+            q_total = int(q_total_res.scalar_one() or 0)
+            if q_total > 0:
+                pos_option_ids = [
+                    o.id for o in sorted(q.options, key=lambda o: o.order_index)[:2]
+                ]
+                pos_res = await session.execute(
+                    select(func.count(Response.id)).where(
+                        Response.question_id == q.id,
+                        Response.option_id.in_(pos_option_ids),
+                    )
+                )
+                pos_count = int(pos_res.scalar_one() or 0)
+                support_pct = round(pos_count / q_total * 100, 1)
+
+        result.append(
+            SurveyTimelineItem(
+                id=survey.id,
+                title=survey.title,
+                description=survey.description,
+                end_date=survey.end_date.isoformat() if survey.end_date else None,
+                total_responses=total,
+                support_pct=support_pct,
+            )
+        )
+
+    return result

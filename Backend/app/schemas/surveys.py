@@ -36,6 +36,7 @@ class SurveyListItemResponse(BaseModel):
     id: int
     title: str
     description: str | None
+    category: str | None = None
     created_by: int
     creator_name: str = "Государственный орган РК"
     region_name: str | None = None
@@ -53,6 +54,7 @@ class SurveyDetailResponse(SurveyListItemResponse):
 class SurveyCreateRequest(BaseModel):
     title: str = Field(min_length=1, max_length=255)
     description: str | None = None
+    category: str | None = None
     status: SurveyStatusLiteral = "draft"
     region_id: int | None = None
     end_date: date | None = None
@@ -61,6 +63,7 @@ class SurveyCreateRequest(BaseModel):
 class SurveyUpdateRequest(BaseModel):
     title: str | None = Field(default=None, min_length=1, max_length=255)
     description: str | None = None
+    category: str | None = None
     region_id: int | None = None
     end_date: date | None = None
 

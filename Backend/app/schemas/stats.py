@@ -47,3 +47,12 @@ class AdvancedStatsResponse(BaseModel):
     gender_stats: list[GenderItem]
     comment_rate: float
     repeat_participants_rate: float
+
+
+class SurveyTimelineItem(BaseModel):
+    id: int
+    title: str
+    description: str | None
+    end_date: str | None
+    total_responses: int
+    support_pct: float

@@ -63,6 +63,7 @@ class Survey(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String(255))
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    category: Mapped[str | None] = mapped_column(String(100), nullable=True)
     created_by: Mapped[int] = mapped_column(ForeignKey("users.id"))
     status: Mapped[SurveyStatus] = mapped_column(Enum(SurveyStatus, name="survey_status"), default=SurveyStatus.draft)
     region_id: Mapped[int | None] = mapped_column(ForeignKey("regions.id"), nullable=True)

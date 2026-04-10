@@ -1,7 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import logo from "../assets/logo.svg";
-import Footer from "../components/Footer";
 import { TOKEN_KEY } from "../api/client";
 import { FRONTEND_ONLY } from "../config/frontendMode";
 
@@ -267,7 +266,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="bg-[#F8FAFC] md:border md:border-[#E4E4E7] md:rounded-2xl mb-4" style={{ paddingBottom: "80px" }}>
           {children}
         </div>
-        <Footer />
       </main>
 
     </div>

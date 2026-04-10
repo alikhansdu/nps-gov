@@ -2,7 +2,10 @@
   "permissions": {
     "allow": [
       "Read(//c/Projects/oqyrman diploma/oqyrman_frontend/**)",
-      "Bash(dart analyze:*)"
+      "Bash(dart analyze:*)",
+      "Bash(docker exec:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

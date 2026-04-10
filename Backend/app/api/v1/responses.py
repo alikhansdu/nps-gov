@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.auth import get_current_user
 from app.core.database import get_session
+from app.core.security import decode_token
 from app.models.models import Option, Question, Response, Survey, User
 from app.schemas.responses import (
     ResponseCreateRequest,
@@ -17,6 +19,22 @@ from app.schemas.responses import (
 )
 
 router = APIRouter(tags=["responses"])
+bearer_optional = HTTPBearer(auto_error=False)
+
+
+async def get_optional_user(
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_optional),
+    session: AsyncSession = Depends(get_session),
+) -> User | None:
+    if not credentials:
+        return None
+    try:
+        payload = decode_token(credentials.credentials)
+        user_id = int(payload["sub"])
+        res = await session.execute(select(User).where(User.id == user_id))
+        return res.scalar_one_or_none()
+    except Exception:
+        return None
 
 
 @router.post("/responses", response_model=ResponseResponse, status_code=status.HTTP_201_CREATED)
@@ -123,3 +141,19 @@ async def survey_results(survey_id: int, session: AsyncSession = Depends(get_ses
         total_responses=total_responses,
         questions=question_results,
     )
+
+
+@router.get("/surveys/{survey_id}/my-vote")
+async def my_vote(
+    survey_id: int,
+    session: AsyncSession = Depends(get_session),
+    current_user: User | None = Depends(get_optional_user),
+) -> dict:
+    """Returns {question_id: option_id} map for the current user's vote."""
+    if current_user is None:
+        return {}
+    res = await session.execute(
+        select(Response.question_id, Response.option_id)
+        .where(Response.survey_id == survey_id, Response.user_id == current_user.id)
+    )
+    return {str(row.question_id): row.option_id for row in res}
