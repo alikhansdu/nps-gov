@@ -47,6 +47,14 @@ class AdvancedStatsResponse(BaseModel):
     gender_stats: list[GenderItem]
     comment_rate: float
     repeat_participants_rate: float
+    avg_responses_per_survey: float
+    survey_completion_rate: float
+
+
+class RegionSegmentItem(BaseModel):
+    region: str
+    overall_pct: float   # responses from this region, % of max
+    youth_pct: float     # % of 18-25 respondents from this region
 
 
 class SurveyTimelineItem(BaseModel):

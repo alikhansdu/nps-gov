@@ -286,7 +286,7 @@ export default function AdminCreateSurvey() {
             description: description.trim() || null,
             category:    category || null,
             region_id:   regionId ? parseInt(regionId) : null,
-            end_date:    endDate || null,
+            end_date:    toApiDate(endDate),
           }),
         });
         if (!updateRes.ok) {
@@ -322,7 +322,7 @@ export default function AdminCreateSurvey() {
             category:    category || null,
             status,
             region_id:   regionId ? parseInt(regionId) : null,
-            end_date:    endDate || null,
+            end_date:    toApiDate(endDate),
           }),
         });
         if (!surveyRes.ok) {

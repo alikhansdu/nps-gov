@@ -35,6 +35,16 @@ class UserLoginRequest(BaseModel):
     password: str
 
 
+class GoogleAuthRequest(BaseModel):
+    credential: str  # Google ID token from frontend
+
+
+class GoogleTokenRequest(BaseModel):
+    access_token: str  # Google OAuth2 access token
+    email: str
+    name: str | None = None
+
+
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"

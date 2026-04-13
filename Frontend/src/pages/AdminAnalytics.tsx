@@ -4,24 +4,18 @@ import AdminLayout from "../layouts/AdminLayout";
 type AdvancedStats = {
   comment_rate: number;
   repeat_participants_rate: number;
-  mobile_rate?: number;
-  avg_vote_time_sec?: number;
-  region_survey_stats?: { label: string; total_surveys: number; completion_rate: number }[];
-  age_group_stats?: { label: string; count: number; pct: number }[];
+  avg_responses_per_survey: number;
+  survey_completion_rate: number;
 };
 
-// ─── Mock region data ─────────────────────────────────────
-const MOCK_REGIONS = [
-  { label: "Алматы",        general: 24, youth: 38 },
-  { label: "Астана",        general: 67, youth: 60 },
-  { label: "Шымкент",       general: 28, youth: 15 },
-  { label: "Арг",           general: 50, youth: 44 },
-  { label: "Карагандинская",general: 33, youth: 60 },
-  { label: "ВКО",           general: 18, youth: 25 },
-];
+type RegionSegment = {
+  region: string;
+  overall_pct: number;
+  youth_pct: number;
+};
 
 // ─── Grouped Bar Chart ────────────────────────────────────
-function GroupedBarChart({ data }: { data: typeof MOCK_REGIONS }) {
+function GroupedBarChart({ data }: { data: { label: string; general: number; youth: number }[] }) {
   const W = 900, H = 300;
   const padL = 44, padR = 20, padT = 16, padB = 56;
   const chartW = W - padL - padR;
@@ -90,37 +84,48 @@ function GroupedBarChart({ data }: { data: typeof MOCK_REGIONS }) {
 
 // ─── Page ─────────────────────────────────────────────────
 export default function AdminAnalytics() {
-  const [advanced, setAdvanced] = useState<AdvancedStats | null>(null);
+  const [advanced,  setAdvanced]  = useState<AdvancedStats | null>(null);
+  const [segments,  setSegments]  = useState<RegionSegment[]>([]);
 
   useEffect(() => {
     fetch("/api/v1/stats/advanced")
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => d && setAdvanced(d))
       .catch(() => {});
+    fetch("/api/v1/stats/region-segmentation")
+      .then((r) => (r.ok ? r.json() : []))
+      .then(setSegments)
+      .catch(() => {});
   }, []);
 
-  const formatTime = (sec: number | undefined) => {
-    if (!sec) return "2 мин 18 сек";
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    return `${m} мин ${s} сек`;
-  };
+  const regionChartData = segments.length > 0
+    ? segments
+        .sort((a, b) => b.overall_pct - a.overall_pct)
+        .slice(0, 5)
+        .map((s) => ({ label: s.region, general: s.overall_pct, youth: s.youth_pct }))
+    : [
+        { label: "Алматы",         general: 24, youth: 38 },
+        { label: "Астана",         general: 67, youth: 60 },
+        { label: "Шымкент",        general: 28, youth: 15 },
+        { label: "Карагандинская", general: 33, youth: 60 },
+        { label: "ВКО",            general: 18, youth: 25 },
+      ];
 
   const patterns = [
     {
-      value: formatTime(advanced?.avg_vote_time_sec),
-      label: "Ср. время голосования",
+      value: advanced ? `${advanced.avg_responses_per_survey}` : "—",
+      label: "Ср. ответов на опрос",
     },
     {
-      value: `${advanced?.comment_rate ?? 23.4}%`,
+      value: advanced ? `${advanced.comment_rate}%` : "—",
       label: "Оставляют комментарий",
     },
     {
-      value: `${advanced?.mobile_rate ?? 71.2}%`,
-      label: "Голосуют с мобильного",
+      value: advanced ? `${advanced.survey_completion_rate}%` : "—",
+      label: "Завершённых опросов",
     },
     {
-      value: `${advanced?.repeat_participants_rate ?? 48.7}%`,
+      value: advanced ? `${advanced.repeat_participants_rate}%` : "—",
       label: "Повторные участники",
     },
   ];
@@ -136,7 +141,7 @@ export default function AdminAnalytics() {
           <h2 className="text-sm font-semibold text-gray-900 mb-4">Сегментация по регионам</h2>
           <div style={{ overflowX: "auto" }}>
             <div style={{ minWidth: "480px" }}>
-              <GroupedBarChart data={MOCK_REGIONS} />
+              <GroupedBarChart data={regionChartData} />
             </div>
           </div>
         </div>

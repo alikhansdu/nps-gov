@@ -3,10 +3,12 @@ import { useNavigate, Link } from "react-router-dom";
 import DatePicker, { registerLocale } from "react-datepicker";
 import { ru } from "date-fns/locale/ru";
 import "react-datepicker/dist/react-datepicker.css";
+import { useGoogleLogin } from "@react-oauth/google";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { TOKEN_KEY } from "../api/client";
 import { FRONTEND_ONLY } from "../config/frontendMode";
+import { useAuth } from "../context/AuthContext";
 
 registerLocale("ru", ru);
 
@@ -21,6 +23,41 @@ export default function Register() {
   const [error, setError]       = useState<string | null>(null);
   const [loading, setLoading]   = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
+
+  const handleGoogleSuccess = async (tokenResponse: { access_token: string }) => {
+    try {
+      // Exchange Google access token for user info, then call our backend
+      const userInfoRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+        headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+      });
+      const userInfo = await userInfoRes.json();
+
+      const res = await fetch("/api/v1/auth/google-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ access_token: tokenResponse.access_token, email: userInfo.email, name: userInfo.name }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data?.detail ?? "Ошибка входа через Google");
+        return;
+      }
+
+      const data = await res.json();
+      localStorage.setItem(TOKEN_KEY, data.access_token);
+      login({ name: userInfo.name ?? "Пользователь" });
+      navigate("/");
+    } catch {
+      setError("Ошибка соединения с сервером");
+    }
+  };
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: handleGoogleSuccess,
+    onError: () => setError("Ошибка входа через Google"),
+  });
 
   const formatPhone = (val: string) => {
     const digits = val.replace(/\D/g, "").slice(0, 11);
@@ -292,6 +329,7 @@ export default function Register() {
             {/* Social */}
             <div className="flex flex-col gap-2 sm:gap-3">
               <button
+                onClick={() => googleLogin()}
                 className="w-full flex items-center justify-center gap-2 text-sm font-medium text-gray-700"
                 style={{
                   border: "1px solid #e5e7eb",

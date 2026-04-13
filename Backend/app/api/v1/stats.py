@@ -14,6 +14,7 @@ from app.schemas.stats import (
     AgeGroupItem,
     DailyActivityItem,
     GenderItem,
+    RegionSegmentItem,
     RegionStatsItem,
     RegionSurveyItem,
     StatsOverviewResponse,
@@ -174,6 +175,18 @@ async def stats_advanced(session: AsyncSession = Depends(get_session)) -> Advanc
     total_users = int(total_users_res.scalar_one() or 0)
     repeat_rate = round(repeat_count / total_users * 100, 1) if total_users > 0 else 0.0
 
+    # ── Среднее ответов на опрос ──
+    total_surveys_res = await session.execute(select(func.count(Survey.id)))
+    total_surveys = int(total_surveys_res.scalar_one() or 0)
+    avg_responses = round(total / total_surveys, 1) if total_surveys > 0 else 0.0
+
+    # ── % завершённых опросов ──
+    completed_surveys_res = await session.execute(
+        select(func.count(Survey.id)).where(Survey.status == SurveyStatus.completed)
+    )
+    completed_surveys = int(completed_surveys_res.scalar_one() or 0)
+    survey_completion_rate = round(completed_surveys / total_surveys * 100, 1) if total_surveys > 0 else 0.0
+
     return AdvancedStatsResponse(
         region_stats=region_stats,
         region_survey_stats=region_survey_stats,
@@ -181,7 +194,45 @@ async def stats_advanced(session: AsyncSession = Depends(get_session)) -> Advanc
         gender_stats=gender_stats,
         comment_rate=comment_rate,
         repeat_participants_rate=repeat_rate,
+        avg_responses_per_survey=avg_responses,
+        survey_completion_rate=survey_completion_rate,
     )
+
+
+@router.get("/region-segmentation", response_model=list[RegionSegmentItem])
+async def region_segmentation(session: AsyncSession = Depends(get_session)) -> list[RegionSegmentItem]:
+    """Returns per-region overall response % and youth (18-25) response %."""
+    region_res = await session.execute(
+        select(Region.name, func.count(Response.id).label("cnt"))
+        .outerjoin(User, User.region_id == Region.id)
+        .outerjoin(Response, Response.user_id == User.id)
+        .group_by(Region.id, Region.name)
+        .having(func.count(Response.id) > 0)
+        .order_by(Region.name)
+    )
+    region_rows = [(row.name, int(row.cnt)) for row in region_res]
+
+    if not region_rows:
+        return []
+
+    max_cnt = max(r[1] for r in region_rows) or 1
+    result: list[RegionSegmentItem] = []
+
+    for region_name, cnt in region_rows:
+        overall_pct = round(cnt / max_cnt * 100, 1)
+
+        youth_res = await session.execute(
+            select(func.count(Response.id))
+            .join(User, User.id == Response.user_id)
+            .join(Region, Region.id == User.region_id)
+            .where(Region.name == region_name, User.age >= 18, User.age <= 25)
+        )
+        youth_cnt = int(youth_res.scalar_one() or 0)
+        youth_pct = round(youth_cnt / cnt * 100, 1) if cnt > 0 else 0.0
+
+        result.append(RegionSegmentItem(region=region_name, overall_pct=overall_pct, youth_pct=youth_pct))
+
+    return result
 
 
 @router.get("/timeline", response_model=list[SurveyTimelineItem])

@@ -6,7 +6,8 @@
       "Bash(docker exec:*)",
       "Bash(npm install:*)",
       "Bash(npx tsc:*)",
-      "Bash(docker compose:*)"
+      "Bash(docker compose:*)",
+      "Bash(python -c \"import google.auth\")"
     ]
   }
 }

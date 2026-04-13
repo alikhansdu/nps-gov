@@ -17,6 +17,7 @@ type AdvancedStats = {
   gender_stats: Array<{ label: string; count: number; pct: number }>;
 };
 
+
 type TimelineItem = {
   id: number;
   title: string;
