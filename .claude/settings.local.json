@@ -7,7 +7,15 @@
       "Bash(npm install:*)",
       "Bash(npx tsc:*)",
       "Bash(docker compose:*)",
-      "Bash(python -c \"import google.auth\")"
+      "Bash(python -c \"import google.auth\")",
+      "Bash(curl -s http://localhost/api/v1/stats/category)",
+      "Bash(python -m json.tool)",
+      "Bash(curl -s http://localhost/api/v1/stats/timeline)",
+      "Bash(curl -s http://localhost/api/v1/decisions)",
+      "Bash(curl -sv http://localhost/api/v1/stats/category)",
+      "Bash(curl -s http://localhost:8000/api/v1/stats/advanced)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('age_groups:', [\\(x['label'],x['count']\\) for x in d['age_group_stats']]\\); print\\('gender:', [\\(x['label'],x['count']\\) for x in d['gender_stats']]\\)\")",
+      "Bash(curl -s \"http://localhost:8000/api/v1/stats/region-segmentation\")"
     ]
   }
 }

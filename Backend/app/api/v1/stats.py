@@ -12,6 +12,7 @@ from app.models.models import Option, Question, Region, Response, Survey, Survey
 from app.schemas.stats import (
     AdvancedStatsResponse,
     AgeGroupItem,
+    CategoryStatsItem,
     DailyActivityItem,
     GenderItem,
     RegionSegmentItem,
@@ -199,6 +200,32 @@ async def stats_advanced(session: AsyncSession = Depends(get_session)) -> Advanc
     )
 
 
+@router.get("/category", response_model=list[CategoryStatsItem])
+async def stats_by_category(session: AsyncSession = Depends(get_session)) -> list[CategoryStatsItem]:
+    """Returns response counts grouped by survey category."""
+    rows_res = await session.execute(
+        select(Survey.category, func.count(Response.id).label("cnt"))
+        .outerjoin(Response, Response.survey_id == Survey.id)
+        .where(Survey.category.is_not(None))
+        .group_by(Survey.category)
+        .order_by(func.count(Response.id).desc())
+    )
+    rows = list(rows_res.all())
+
+    if not rows:
+        return []
+
+    total_all = sum(int(r.cnt) for r in rows) or 1
+    return [
+        CategoryStatsItem(
+            label=row.category,
+            responses_count=int(row.cnt),
+            pct=round(int(row.cnt) / total_all * 100, 1),
+        )
+        for row in rows
+    ]
+
+
 @router.get("/region-segmentation", response_model=list[RegionSegmentItem])
 async def region_segmentation(session: AsyncSession = Depends(get_session)) -> list[RegionSegmentItem]:
     """Returns per-region overall response % and youth (18-25) response %."""
@@ -237,7 +264,7 @@ async def region_segmentation(session: AsyncSession = Depends(get_session)) -> l
 
 @router.get("/timeline", response_model=list[SurveyTimelineItem])
 async def stats_timeline(session: AsyncSession = Depends(get_session)) -> list[SurveyTimelineItem]:
-    """Returns completed surveys with total responses and support % for the analytics timeline."""
+    """Returns completed surveys with total responses, support % and implementation_status."""
     surveys_res = await session.execute(
         select(Survey)
         .options(
@@ -291,6 +318,7 @@ async def stats_timeline(session: AsyncSession = Depends(get_session)) -> list[S
                 end_date=survey.end_date.isoformat() if survey.end_date else None,
                 total_responses=total,
                 support_pct=support_pct,
+                implementation_status=survey.implementation_status.value,
             )
         )
 

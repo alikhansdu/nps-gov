@@ -57,6 +57,12 @@ class RegionSegmentItem(BaseModel):
     youth_pct: float     # % of 18-25 respondents from this region
 
 
+class CategoryStatsItem(BaseModel):
+    label: str
+    responses_count: int
+    pct: float
+
+
 class SurveyTimelineItem(BaseModel):
     id: int
     title: str
@@ -64,3 +70,4 @@ class SurveyTimelineItem(BaseModel):
     end_date: str | None
     total_responses: int
     support_pct: float
+    implementation_status: str

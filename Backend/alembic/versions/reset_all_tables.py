@@ -241,6 +241,15 @@ def upgrade():
             {"id": 18, "iin": "000000000018", "phone": "+77011110018", "name": "Нұрболат Әбенов",    "email": "citizen13@example.com", "hashed_password": demo_pwd,  "role": "citizen",    "region_id": 14, "is_active": True, "age": 55, "gender": "male",   "organization": None},
             {"id": 19, "iin": "000000000019", "phone": "+77011110019", "name": "Зарина Мусина",      "email": "citizen14@example.com", "hashed_password": demo_pwd,  "role": "citizen",    "region_id": 15, "is_active": True, "age": 42, "gender": "female", "organization": None},
             {"id": 20, "iin": "000000000020", "phone": "+77011110020", "name": "Арман Сагынтаев",    "email": "citizen15@example.com", "hashed_password": demo_pwd,  "role": "citizen",    "region_id": 17, "is_active": True, "age": 58, "gender": "male",   "organization": None},
+            # --- молодёжь 18-24 (8 новых), чуть больше мужчин ---
+            {"id": 21, "iin": "000000000021", "phone": "+77011110021", "name": "Данияр Сейіт",        "email": "youth1@example.com",    "hashed_password": demo_pwd,  "role": "citizen",    "region_id": 1,  "is_active": True, "age": 19, "gender": "male",   "organization": None},
+            {"id": 22, "iin": "000000000022", "phone": "+77011110022", "name": "Арсен Қасымов",       "email": "youth2@example.com",    "hashed_password": demo_pwd,  "role": "citizen",    "region_id": 2,  "is_active": True, "age": 22, "gender": "male",   "organization": None},
+            {"id": 23, "iin": "000000000023", "phone": "+77011110023", "name": "Айару Нұрова",         "email": "youth3@example.com",    "hashed_password": demo_pwd,  "role": "citizen",    "region_id": 3,  "is_active": True, "age": 20, "gender": "female", "organization": None},
+            {"id": 24, "iin": "000000000024", "phone": "+77011110024", "name": "Бекзат Омаров",        "email": "youth4@example.com",    "hashed_password": demo_pwd,  "role": "citizen",    "region_id": 4,  "is_active": True, "age": 18, "gender": "male",   "organization": None},
+            {"id": 25, "iin": "000000000025", "phone": "+77011110025", "name": "Нұрдаулет Әлі",       "email": "youth5@example.com",    "hashed_password": demo_pwd,  "role": "citizen",    "region_id": 6,  "is_active": True, "age": 21, "gender": "male",   "organization": None},
+            {"id": 26, "iin": "000000000026", "phone": "+77011110026", "name": "Мөлдір Серікова",      "email": "youth6@example.com",    "hashed_password": demo_pwd,  "role": "citizen",    "region_id": 8,  "is_active": True, "age": 24, "gender": "female", "organization": None},
+            {"id": 27, "iin": "000000000027", "phone": "+77011110027", "name": "Жасұлан Тілеубек",    "email": "youth7@example.com",    "hashed_password": demo_pwd,  "role": "citizen",    "region_id": 16, "is_active": True, "age": 20, "gender": "male",   "organization": None},
+            {"id": 28, "iin": "000000000028", "phone": "+77011110028", "name": "Сәуле Бержанова",      "email": "youth8@example.com",    "hashed_password": demo_pwd,  "role": "citizen",    "region_id": 11, "is_active": True, "age": 23, "gender": "female", "organization": None},
         ],
     )
 
@@ -414,6 +423,32 @@ def upgrade():
             {"id": 52, "user_id": 18, "survey_id": 6, "question_id": 16, "option_id": 39,   "text_answer": None},
             {"id": 53, "user_id": 18, "survey_id": 6, "question_id": 17, "option_id": 43,   "text_answer": None},
             {"id": 54, "user_id": 18, "survey_id": 6, "question_id": 18, "option_id": None, "text_answer": "Полиция не реагирует на вызовы вовремя."},
+            # Молодёжь 18-24 → Survey 1 (госуслуги)
+            {"id": 55, "user_id": 21, "survey_id": 1, "question_id": 1,  "option_id": 1,    "text_answer": None},
+            {"id": 56, "user_id": 21, "survey_id": 1, "question_id": 2,  "option_id": 5,    "text_answer": None},
+            {"id": 57, "user_id": 21, "survey_id": 1, "question_id": 3,  "option_id": None, "text_answer": "Мобильное приложение eGov работает быстро."},
+            {"id": 58, "user_id": 22, "survey_id": 1, "question_id": 1,  "option_id": 2,    "text_answer": None},
+            {"id": 59, "user_id": 22, "survey_id": 1, "question_id": 2,  "option_id": 6,    "text_answer": None},
+            {"id": 60, "user_id": 22, "survey_id": 1, "question_id": 3,  "option_id": None, "text_answer": "Цифровизация ЦОН идёт хорошо, но очереди ещё есть."},
+            {"id": 61, "user_id": 23, "survey_id": 1, "question_id": 1,  "option_id": 3,    "text_answer": None},
+            {"id": 62, "user_id": 23, "survey_id": 1, "question_id": 2,  "option_id": 7,    "text_answer": None},
+            {"id": 63, "user_id": 23, "survey_id": 1, "question_id": 3,  "option_id": None, "text_answer": "Нужно добавить онлайн-запись к специалистам."},
+            {"id": 64, "user_id": 24, "survey_id": 1, "question_id": 1,  "option_id": 2,    "text_answer": None},
+            {"id": 65, "user_id": 24, "survey_id": 1, "question_id": 2,  "option_id": 8,    "text_answer": None},
+            {"id": 66, "user_id": 24, "survey_id": 1, "question_id": 3,  "option_id": None, "text_answer": "Налоговый портал стал удобнее."},
+            # Молодёжь 18-24 → Survey 3 (экология)
+            {"id": 67, "user_id": 25, "survey_id": 3, "question_id": 7,  "option_id": 17,   "text_answer": None},
+            {"id": 68, "user_id": 25, "survey_id": 3, "question_id": 8,  "option_id": 19,   "text_answer": None},
+            {"id": 69, "user_id": 25, "survey_id": 3, "question_id": 9,  "option_id": None, "text_answer": "Смог над городом виден каждое утро."},
+            {"id": 70, "user_id": 26, "survey_id": 3, "question_id": 7,  "option_id": 18,   "text_answer": None},
+            {"id": 71, "user_id": 26, "survey_id": 3, "question_id": 8,  "option_id": 22,   "text_answer": None},
+            {"id": 72, "user_id": 26, "survey_id": 3, "question_id": 9,  "option_id": None, "text_answer": "Парков стало меньше, деревья вырубают."},
+            {"id": 73, "user_id": 27, "survey_id": 3, "question_id": 7,  "option_id": 17,   "text_answer": None},
+            {"id": 74, "user_id": 27, "survey_id": 3, "question_id": 8,  "option_id": 21,   "text_answer": None},
+            {"id": 75, "user_id": 27, "survey_id": 3, "question_id": 9,  "option_id": None, "text_answer": "Мусорные баки переполняются в жаркое время."},
+            {"id": 76, "user_id": 28, "survey_id": 3, "question_id": 7,  "option_id": 18,   "text_answer": None},
+            {"id": 77, "user_id": 28, "survey_id": 3, "question_id": 8,  "option_id": 20,   "text_answer": None},
+            {"id": 78, "user_id": 28, "survey_id": 3, "question_id": 9,  "option_id": None, "text_answer": "Качество воды в кранах оставляет желать лучшего."},
         ],
     )
 

@@ -9,6 +9,7 @@ from app.api.v1.responses import router as responses_router
 from app.api.v1.stats import router as stats_router
 from app.api.v1.regions import router as regions_router
 from app.api.v1.admin import router as admin_router
+from app.api.v1.decisions import router as decisions_router
 
 app = FastAPI(title="NPS GOV API", version="1.0.0", servers=[{"url": "/api/v1"}])
 
@@ -29,6 +30,7 @@ app.include_router(responses_router, prefix=API_PREFIX)
 app.include_router(stats_router, prefix=API_PREFIX)
 app.include_router(regions_router, prefix=API_PREFIX)
 app.include_router(admin_router, prefix=API_PREFIX)
+app.include_router(decisions_router, prefix=API_PREFIX)
 
 @app.get("/health")
 async def health():

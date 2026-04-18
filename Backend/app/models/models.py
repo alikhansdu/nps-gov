@@ -18,10 +18,22 @@ class SurveyStatus(str, enum.Enum):
     completed = "completed"
 
 
+class ImplementationStatus(str, enum.Enum):
+    pending = "pending"
+    in_progress = "in_progress"
+    implemented = "implemented"
+    rejected = "rejected"
+
+
 class QuestionType(str, enum.Enum):
     single = "single"
     multiple = "multiple"
     text = "text"
+
+
+class DecisionStatus(str, enum.Enum):
+    implemented = "implemented"
+    in_progress = "in_progress"
 
 
 class User(Base):
@@ -66,6 +78,11 @@ class Survey(Base):
     category: Mapped[str | None] = mapped_column(String(100), nullable=True)
     created_by: Mapped[int] = mapped_column(ForeignKey("users.id"))
     status: Mapped[SurveyStatus] = mapped_column(Enum(SurveyStatus, name="survey_status"), default=SurveyStatus.draft)
+    implementation_status: Mapped[ImplementationStatus] = mapped_column(
+        Enum(ImplementationStatus, name="implementation_status"),
+        default=ImplementationStatus.pending,
+        server_default="pending",
+    )
     region_id: Mapped[int | None] = mapped_column(ForeignKey("regions.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     end_date: Mapped[date | None] = mapped_column(Date, nullable=True)
@@ -74,6 +91,7 @@ class Survey(Base):
     region: Mapped[Region | None] = relationship(back_populates="surveys")
     questions: Mapped[list["Question"]] = relationship(back_populates="survey", cascade="all, delete-orphan")
     responses: Mapped[list["Response"]] = relationship(back_populates="survey", cascade="all, delete-orphan")
+    decisions: Mapped[list["Decision"]] = relationship(back_populates="survey")
 
 
 class Question(Base):
@@ -120,3 +138,20 @@ class Response(Base):
     survey: Mapped[Survey] = relationship(back_populates="responses")
     question: Mapped[Question] = relationship(back_populates="responses")
     option: Mapped[Option | None] = relationship(back_populates="responses")
+
+
+class Decision(Base):
+    __tablename__ = "decisions"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(String(500))
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    status: Mapped[DecisionStatus] = mapped_column(
+        Enum(DecisionStatus, name="decision_status"),
+        default=DecisionStatus.in_progress,
+        server_default="in_progress",
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    survey_id: Mapped[int | None] = mapped_column(ForeignKey("surveys.id"), nullable=True)
+
+    survey: Mapped["Survey | None"] = relationship(back_populates="decisions")
